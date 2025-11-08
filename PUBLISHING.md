@@ -74,16 +74,14 @@ This project uses **Yarn 4** (Modern/Berry) which provides excellent Windows sup
    yarn install
    ```
 
-   This will automatically:
-   - Install all npm packages
-   - Download Playwright browser binaries (Chromium, Firefox, WebKit)
-
-   **Note:** You may see a harmless rollup postinstall warning about `patch-package`. This doesn't affect functionality. To eliminate the warning:
+3. **Install Playwright browsers (one-time setup):**
    ```bash
-   npm install -g patch-package
+   yarn setup:browsers
    ```
 
-3. **Verify tests pass:**
+   This downloads Chromium, Firefox, and WebKit (~500MB) for browser-based testing.
+
+4. **Verify tests pass:**
    ```bash
    yarn test
    ```
@@ -199,16 +197,19 @@ All package managers can consume the published package. We use yarn for developm
 
 ## Testing on Windows
 
-The browser-based tests use Playwright. Browser binaries are automatically downloaded during `yarn install` via the postinstall script.
+The browser-based tests use Playwright. Browser binaries need to be installed once before running tests.
 
 ```bash
-# Windows - install dependencies and browsers
+# Windows - install dependencies
 yarn install
+
+# Install Playwright browsers (one-time setup)
+yarn setup:browsers
 
 # Run tests (all 3 browsers: Chromium, Firefox, WebKit)
 yarn test
 ```
 
-The `postinstall` script runs `playwright install chromium firefox webkit` automatically, so you don't need any manual steps.
+The `setup:browsers` script installs Chromium, Firefox, and WebKit. You only need to run this once, or when Playwright is updated.
 
 Tests run in headless mode by default across all 3 browsers to ensure cross-browser compatibility.

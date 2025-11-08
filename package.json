@@ -31,7 +31,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "postinstall": "node scripts/postinstall.mjs",
+    "setup:browsers": "playwright install chromium firefox webkit",
     "prepublishOnly": "yarn test && yarn build",
     "publish:npm": "yarn npm publish --access public"
   },

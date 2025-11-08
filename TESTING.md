@@ -27,11 +27,13 @@ Tests will re-run automatically when files change across all 3 browsers.
 
 ## Browser Installation
 
-Browsers are downloaded automatically by Playwright. To manually install:
+Before running tests, you need to install the Playwright browsers (one-time setup):
 
 ```bash
-yarn dlx playwright install chromium firefox webkit
+yarn setup:browsers
 ```
+
+This downloads Chromium, Firefox, and WebKit (~500MB). You only need to run this once.
 
 ### System Dependencies (Linux)
 

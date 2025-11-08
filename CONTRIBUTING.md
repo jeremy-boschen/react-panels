@@ -6,6 +6,9 @@
 # Install dependencies
 yarn install
 
+# Install Playwright browsers for testing (one-time setup)
+yarn setup:browsers
+
 # Run tests
 yarn test
 
@@ -18,6 +21,8 @@ yarn build
 # Type check
 yarn typecheck
 ```
+
+**Note:** The `setup:browsers` command downloads Chromium, Firefox, and WebKit (~500MB). You only need to run this once, or when Playwright is updated.
 
 ## Testing
 
