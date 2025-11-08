@@ -1,0 +1,92 @@
+{
+  "name": "@jeremy-boschen/react-adjustable-panels",
+  "version": "0.1.0",
+  "description": "Lightweight React adjustable panel library with pixel and percentage-based sizing",
+  "type": "module",
+  "packageManager": "yarn@4.11.0",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./style.css": "./dist/style.css"
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "vite build && tsc --project tsconfig.build.json --emitDeclarationOnly --outDir dist",
+    "build:demo": "node scripts/extract-demo-code.mjs && cd demo && vite build",
+    "dev": "vite build --watch",
+    "dev:demo": "node scripts/extract-demo-code.mjs && cd demo && vite",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "postinstall": "node scripts/postinstall.mjs",
+    "prepublishOnly": "yarn test && yarn build",
+    "publish:npm": "yarn npm publish --access public"
+  },
+  "keywords": [
+    "react",
+    "panels",
+    "resize",
+    "split-pane",
+    "layout",
+    "resizable",
+    "pixel-sizing",
+    "percentage-sizing"
+  ],
+  "author": "Jeremy Boschen",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jeremy-boschen/react-adjustable-panels"
+  },
+  "homepage": "https://github.com/jeremy-boschen/react-adjustable-panels#readme",
+  "bugs": {
+    "url": "https://github.com/jeremy-boschen/react-adjustable-panels/issues"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.3.4",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/react": "^16.3.0",
+    "@types/node": "^24.10.0",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "@vitest/browser": "^4.0.8",
+    "@vitest/browser-playwright": "^4.0.8",
+    "@vitest/coverage-istanbul": "^4.0.8",
+    "@vitest/coverage-v8": "^4.0.8",
+    "babel-plugin-react-compiler": "^1.0.0",
+    "jsdom": "^24.1.3",
+    "patch-package": "^8.0.0",
+    "playwright": "^1.56.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.9",
+    "vitest": "^4.0.8"
+  },
+  "dependenciesMeta": {
+    "rollup": {
+      "built": false
+    }
+  }
+}

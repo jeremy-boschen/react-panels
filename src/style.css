@@ -1,0 +1,77 @@
+/* Default styles for resize handles - seamless overlay with no gap */
+[data-resize-handle="true"] {
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10; /* Above panels */
+  background: transparent;
+}
+
+/* Horizontal handles - negative left/right margins */
+[data-resize-handle="true"][data-direction="horizontal"] {
+  margin-left: -2px;
+  margin-right: -2px;
+}
+
+/* Vertical handles - negative top/bottom margins */
+[data-resize-handle="true"][data-direction="vertical"] {
+  margin-top: -2px;
+  margin-bottom: -2px;
+}
+
+/* Thin visual indicator - only visible on hover/active */
+[data-resize-handle="true"]::before {
+  content: '';
+  position: absolute;
+  background: transparent;
+  transition: all 0.2s ease;
+  pointer-events: none; /* Let clicks pass through to the handle */
+}
+
+/* Horizontal indicator - vertical line */
+[data-resize-handle="true"][data-direction="horizontal"]::before {
+  top: 0;
+  left: 50%;
+  bottom: 0;
+  width: 1px;
+  transform: translateX(-50%);
+}
+
+/* Vertical indicator - horizontal line */
+[data-resize-handle="true"][data-direction="vertical"]::before {
+  left: 0;
+  top: 50%;
+  right: 0;
+  height: 1px;
+  transform: translateY(-50%);
+}
+
+/* Hover state */
+[data-resize-handle="true"][data-direction="horizontal"]:hover::before {
+  width: 2px;
+  background: rgba(0, 102, 204, 0.4);
+}
+
+[data-resize-handle="true"][data-direction="vertical"]:hover::before {
+  height: 2px;
+  background: rgba(0, 102, 204, 0.4);
+}
+
+/* Active state */
+[data-resize-handle="true"][data-direction="horizontal"]:active::before {
+  width: 3px;
+  background: rgba(0, 102, 204, 0.8);
+}
+
+[data-resize-handle="true"][data-direction="vertical"]:active::before {
+  height: 3px;
+  background: rgba(0, 102, 204, 0.8);
+}
+
+[data-panel-group] {
+}
+
+/* Ensure panels don't shrink below their size */
+[data-panel="true"] {
+  flex-shrink: 0;
+  overflow: auto;
+}

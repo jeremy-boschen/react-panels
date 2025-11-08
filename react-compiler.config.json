@@ -1,0 +1,7 @@
+{
+  "target": "19",
+  "sources": [
+    "src/**",
+    "demo/src/**"
+  ]
+}

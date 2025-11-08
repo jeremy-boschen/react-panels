@@ -1,0 +1,373 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
+    "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #0d1117;
+  color: #c9d1d9;
+}
+
+code {
+  font-family: "Courier New", Courier, monospace;
+  background-color: #161b22;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Header */
+.app-header {
+  background: linear-gradient(135deg, #1f6feb 0%, #0969da 100%);
+  padding: 2rem 2rem 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+}
+
+.header-content {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.app-header h1 {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+.header-links {
+  display: flex;
+  gap: 1rem;
+}
+
+.header-links a {
+  color: #ffffff;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.header-links a:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Main Content */
+.main-content {
+  flex: 1;
+  overflow: hidden;
+}
+
+.demo-container {
+  height: 100%;
+}
+
+/* Sidebar */
+.sidebar-panel {
+  background-color: #161b22;
+  border-right: 1px solid #30363d;
+}
+
+.sidebar {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.sidebar h2 {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  color: #f0f6fc;
+}
+
+.demo-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.demo-nav-item {
+  text-align: left;
+  padding: 1rem;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #c9d1d9;
+}
+
+.demo-nav-item:hover {
+  background: #161b22;
+  border-color: #58a6ff;
+}
+
+.demo-nav-item.active {
+  background: #1f6feb;
+  border-color: #1f6feb;
+  color: #ffffff;
+}
+
+.demo-nav-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 0.25rem;
+}
+
+.demo-nav-description {
+  font-size: 0.8rem;
+  opacity: 0.8;
+  line-height: 1.4;
+}
+
+/* Demo Panel */
+.demo-panel {
+  background-color: #0d1117;
+}
+
+.demo-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  overflow: hidden;
+}
+
+.demo-header {
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.demo-header h2 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: #f0f6fc;
+}
+
+.demo-header p {
+  color: #8b949e;
+  font-size: 0.95rem;
+}
+
+.demo-viewer {
+  flex: 1;
+  background: #0d1117;
+  border-radius: 8px;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* Footer */
+.app-footer {
+  background-color: #161b22;
+  border-top: 1px solid #30363d;
+  padding: 1rem 2rem;
+  text-align: center;
+  color: #8b949e;
+  font-size: 0.875rem;
+}
+
+/* Demo Examples Styling */
+.demo-example {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.panel-content {
+  height: 100%;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.panel-header {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #f0f6fc;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #30363d;
+}
+
+.panel-body {
+  flex: 1;
+  color: #8b949e;
+  line-height: 1.6;
+}
+
+/* Panel Colors - seamless (no left/right borders for horizontal layouts) */
+.panel-blue {
+  background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+  border-top: 1px solid #374151;
+  border-bottom: 1px solid #374151;
+}
+
+.panel-purple {
+  background: linear-gradient(135deg, #2e1065 0%, #1e1b4b 100%);
+  border-top: 1px solid #4c1d95;
+  border-bottom: 1px solid #4c1d95;
+}
+
+.panel-green {
+  background: linear-gradient(135deg, #064e3b 0%, #022c22 100%);
+  border-top: 1px solid #065f46;
+  border-bottom: 1px solid #065f46;
+}
+
+.panel-orange {
+  background: linear-gradient(135deg, #7c2d12 0%, #431407 100%);
+  border-top: 1px solid #9a3412;
+  border-bottom: 1px solid #9a3412;
+}
+
+.panel-red {
+  background: linear-gradient(135deg, #7f1d1d 0%, #450a0a 100%);
+  border-top: 1px solid #991b1b;
+  border-bottom: 1px solid #991b1b;
+}
+
+.panel-teal {
+  background: linear-gradient(135deg, #134e4a 0%, #042f2e 100%);
+  border-top: 1px solid #115e59;
+  border-bottom: 1px solid #115e59;
+}
+
+.panel-indigo {
+  background: linear-gradient(135deg, #312e81 0%, #1e1b4b 100%);
+  border-top: 1px solid #3730a3;
+  border-bottom: 1px solid #3730a3;
+}
+
+/* Control Panel */
+.control-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  background: #161b22;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.control-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #f0f6fc;
+}
+
+.button-group {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 0.5rem 1rem;
+  background: #1f6feb;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn:hover {
+  background: #1a5cd7;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn-secondary {
+  background: #30363d;
+}
+
+.btn-secondary:hover {
+  background: #484f58;
+}
+
+/* Event Log */
+.event-log {
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  padding: 1rem;
+  height: 150px;
+  overflow-y: auto;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 0.85rem;
+}
+
+.event-log-item {
+  padding: 0.25rem 0;
+  color: #8b949e;
+}
+
+.event-log-item .timestamp {
+  color: #58a6ff;
+  margin-right: 0.5rem;
+}
+
+.event-log-item .event-type {
+  color: #56d364;
+  margin-right: 0.5rem;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0d1117;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #30363d;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #484f58;
+}
