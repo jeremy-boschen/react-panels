@@ -8,7 +8,8 @@
 A lightweight, zero-dependency React panel library with flexible sizing options including pixel, percentage, and
 auto-fill support.
 
-**🚀 [Live Demo](https://jeremy-boschen.github.io/react-adjustable-panels/)** | Try it out and see all features in action!
+**🚀 [Live Demo](https://jeremy-boschen.github.io/react-adjustable-panels/)** | Try it out and see all features in
+action!
 
 ## Features
 
@@ -31,10 +32,16 @@ was written through an AI-assisted development process.
 
 This project demonstrates how AI can be a powerful pair-programming partner for building production-quality software
 libraries with:
+
 - Clean, well-tested code with 90%+ coverage
 - Comprehensive documentation and examples
 - Thoughtful API design and user experience
 - Multi-browser testing and CI/CD setup
+
+## Inspiration
+
+This library was inspired by [react-resizable-panels](https://github.com/bvaughn/react-resizable-panels), an excellent
+panel resizing library by Brian Vaughn.
 
 ## Installation
 
@@ -129,14 +136,14 @@ import {Panel, PanelGroup, ResizeHandle} from '@jeremy-boschen/react-adjustable-
 // Larger handle for easier dragging
 <PanelGroup direction="horizontal">
     <Panel defaultSize="50%">Left</Panel>
-    <ResizeHandle size={8} />  {/* 8px instead of default 4px */}
+    <ResizeHandle size={8}/> {/* 8px instead of default 4px */}
     <Panel defaultSize="50%">Right</Panel>
 </PanelGroup>
 
 // Seamless layout: large hit area with thin visual indicator
 <PanelGroup direction="horizontal">
     <Panel defaultSize="50%">Left</Panel>
-    <ResizeHandle size={12} className="seamless-handle" />
+    <ResizeHandle size={12} className="seamless-handle"/>
     <Panel defaultSize="50%">Right</Panel>
 </PanelGroup>
 
@@ -155,26 +162,29 @@ import {Panel, PanelGroup, ResizeHandle} from '@jeremy-boschen/react-adjustable-
 By default, resize handles overlay the boundary between panels with no visual gap. For a completely seamless appearance:
 
 **Horizontal layouts** (panels side-by-side):
+
 ```css
 /* Remove left/right borders - handles overlay these edges */
 .my-panel {
-  border-top: 1px solid #ccc;
-  border-bottom: 1px solid #ccc;
-  /* No left/right borders */
+    border-top: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+    /* No left/right borders */
 }
 ```
 
 **Vertical layouts** (panels stacked):
+
 ```css
 /* Remove top/bottom borders - handles overlay these edges */
 .my-panel {
-  border-left: 1px solid #ccc;
-  border-right: 1px solid #ccc;
-  /* No top/bottom borders */
+    border-left: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+    /* No top/bottom borders */
 }
 ```
 
 The resize handles:
+
 - Are **transparent by default** with no visible gap
 - Use **negative margins** to overlay panel boundaries
 - Show a **subtle blue indicator** only on hover
@@ -186,29 +196,30 @@ The resize handles:
 ```css
 /* Customize the hover indicator */
 .seamless-handle {
-  background: transparent !important;
-  position: relative;
+    background: transparent !important;
+    position: relative;
 }
 
 .seamless-handle::before {
-  content: '';
-  position: absolute;
-  left: 50%;
-  top: 0;
-  bottom: 0;
-  width: 1px;
-  background: #ddd;
-  transform: translateX(-50%);
-  transition: all 0.2s ease;
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: #ddd;
+    transform: translateX(-50%);
+    transition: all 0.2s ease;
 }
 
 .seamless-handle:hover::before {
-  width: 3px;
-  background: #0066cc;
+    width: 3px;
+    background: #0066cc;
 }
 ```
 
-**Note:** If you don't specify a `<ResizeHandle>`, a default 4px seamless handle is automatically inserted between panels.
+**Note:** If you don't specify a `<ResizeHandle>`, a default 4px seamless handle is automatically inserted between
+panels.
 
 ### Resize Callbacks
 
@@ -371,7 +382,7 @@ Customizable resize handle component for controlling panel resizing.
 // Custom handle with larger hit area
 <PanelGroup>
     <Panel>...</Panel>
-    <ResizeHandle size={12} className="custom-handle" />
+    <ResizeHandle size={12} className="custom-handle"/>
     <Panel>...</Panel>
 </PanelGroup>
 
@@ -385,7 +396,8 @@ Customizable resize handle component for controlling panel resizing.
 </PanelGroup>
 ```
 
-**Note:** You don't need to specify `direction`, `onDragStart`, `onDrag`, or `onDragEnd` - these are automatically provided by the parent `PanelGroup`.
+**Note:** You don't need to specify `direction`, `onDragStart`, `onDrag`, or `onDragEnd` - these are automatically
+provided by the parent `PanelGroup`.
 
 ### Types
 
@@ -472,7 +484,8 @@ development process.
 ## Support
 
 - 🐛 [Report a bug](https://github.com/jeremy-boschen/react-adjustable-panels/issues/new?template=bug_report.yml)
-- ✨ [Request a feature](https://github.com/jeremy-boschen/react-adjustable-panels/issues/new?template=feature_request.yml)
+-
+✨ [Request a feature](https://github.com/jeremy-boschen/react-adjustable-panels/issues/new?template=feature_request.yml)
 - 💬 [Start a discussion](https://github.com/jeremy-boschen/react-adjustable-panels/discussions)
 - 📖 [Read the docs](https://github.com/jeremy-boschen/react-adjustable-panels#readme)
 

@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2025-11-08
+
+### Fixed
+- Removed postinstall script that caused installation failures when package was used as a dependency
+- The postinstall script attempted to run `scripts/postinstall.mjs` which is not included in published packages
+
+### Changed
+- Replaced automatic postinstall with manual `yarn setup:browsers` command for development
+- Updated documentation (CONTRIBUTING.md, PUBLISHING.md, TESTING.md) with browser setup instructions
+
+## [0.1.0] - 2025-11-08
+
 ### Added
 - Initial release
 - Pixel-based (`"200px"`) and percentage-based (`"50%"`) sizing
@@ -26,10 +38,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GitHub Actions CI/CD workflows
 - Automated npm publishing on GitHub releases
 
-## [0.1.0] - TBD
-
-### Added
-- Initial public release
-
-[Unreleased]: https://github.com/jeremy-boschen/react-adjustable-panels/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/jeremy-boschen/react-adjustable-panels/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/jeremy-boschen/react-adjustable-panels/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/jeremy-boschen/react-adjustable-panels/releases/tag/v0.1.0
