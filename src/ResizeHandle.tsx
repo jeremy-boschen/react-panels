@@ -8,6 +8,7 @@ import {
   useRef,
 } from 'react';
 import type { Direction } from './types';
+import { normalizeResizeHandleProps } from './propNormalization';
 
 export interface ResizeHandleProps {
   /** Layout direction - automatically provided by PanelGroup */
@@ -28,16 +29,18 @@ export interface ResizeHandleProps {
   children?: ReactNode;
 }
 
-export function ResizeHandle({
-  direction = 'horizontal',
-  onDragStart,
-  onDrag,
-  onDragEnd,
-  className,
-  style,
-  size = 4,
-  children,
-}: ResizeHandleProps) {
+export function ResizeHandle(rawProps: ResizeHandleProps) {
+  // Normalize props at component boundary - provides defaults for optional values
+  const {
+    direction,
+    onDragStart,
+    onDrag,
+    onDragEnd,
+    className,
+    style,
+    size,
+    children,
+  } = normalizeResizeHandleProps(rawProps);
   const isDraggingRef = useRef(false);
   const startPosRef = useRef(0);
   const cleanupRef = useRef<(() => void) | null>(null);

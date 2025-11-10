@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { PanelSize } from '../types';
-import { calculateSizes, convertFromPixels, convertToPixels, formatSize, parseSize } from '../utils';
+import { calculateSizes, convertFromPixels, convertToPixels, formatSize, normalizePanelSize, parseSize } from '../utils';
 
 describe('utils', () => {
   describe('parseSize', () => {
@@ -42,6 +42,19 @@ describe('utils', () => {
     it('throws on invalid format', () => {
       expect(() => parseSize('invalid' as PanelSize)).toThrow();
     });
+
+    it('provides detailed error message for invalid format', () => {
+      expect(() => parseSize('invalid' as PanelSize)).toThrow(
+        /Invalid size format: invalid \(type: string\)/
+      );
+    });
+
+    it('provides helpful error message for NaNundefined case', () => {
+      // This simulates the error that would occur if formatSize returned "NaNundefined"
+      expect(() => parseSize('NaNundefined' as PanelSize)).toThrow(
+        /If you're seeing "NaNundefined", this may indicate an internal state synchronization issue/
+      );
+    });
   });
 
   describe('formatSize', () => {
@@ -55,6 +68,23 @@ describe('utils', () => {
 
     it('formats auto size correctly', () => {
       expect(formatSize(0, 'auto')).toBe('auto');
+    });
+
+    it('handles NaN value gracefully (state sync safety)', () => {
+      // This can occur during state synchronization issues where refs get out of sync
+      expect(formatSize(NaN, 'px')).toBe('auto');
+    });
+  });
+
+  describe('normalizePanelSize', () => {
+    it('returns size unchanged if already defined', () => {
+      expect(normalizePanelSize('100px' as PanelSize)).toBe('100px');
+      expect(normalizePanelSize('50%' as PanelSize)).toBe('50%');
+      expect(normalizePanelSize('auto')).toBe('auto');
+    });
+
+    it('converts undefined to auto', () => {
+      expect(normalizePanelSize(undefined)).toBe('auto');
     });
   });
 

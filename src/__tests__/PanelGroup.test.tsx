@@ -2582,4 +2582,168 @@ describe('PanelGroup Integration Tests', () => {
       });
     });
   });
+
+  describe('Undefined Prop Handling', () => {
+    it('handles minSize={undefined} without errors', async () => {
+      render(
+        <div style={{ width: '1000px', height: '600px' }}>
+          <PanelGroup direction="horizontal">
+            <Panel defaultSize="50%" minSize={undefined}>
+              <div data-testid="panel-1">Panel 1</div>
+            </Panel>
+            <Panel defaultSize="50%">
+              <div data-testid="panel-2">Panel 2</div>
+            </Panel>
+          </PanelGroup>
+        </div>
+      );
+
+      await waitFor(() => {
+        const panel1 = screen.getByTestId('panel-1').parentElement;
+        const panel2 = screen.getByTestId('panel-2').parentElement;
+        expect(panel1?.style.width).toBeTruthy();
+        expect(panel2?.style.width).toBeTruthy();
+      });
+    });
+
+    it('handles conditional minSize prop switching to undefined', async () => {
+      function TestComponent() {
+        const [hasMinSize, setHasMinSize] = useState(true);
+
+        return (
+          <div style={{ width: '1000px', height: '600px' }}>
+            <button onClick={() => setHasMinSize(!hasMinSize)} data-testid="toggle-btn">
+              Toggle MinSize
+            </button>
+            <PanelGroup direction="horizontal">
+              <Panel defaultSize="50%" minSize={hasMinSize ? '200px' : undefined}>
+                <div data-testid="panel-1">Panel 1</div>
+              </Panel>
+              <Panel defaultSize="50%">
+                <div data-testid="panel-2">Panel 2</div>
+              </Panel>
+            </PanelGroup>
+          </div>
+        );
+      }
+
+      render(<TestComponent />);
+
+      // Initially with minSize="200px"
+      await waitFor(() => {
+        const panel1 = screen.getByTestId('panel-1').parentElement;
+        expect(panel1?.style.width).toBeTruthy();
+      });
+
+      // Toggle to minSize={undefined}
+      const toggleBtn = screen.getByTestId('toggle-btn');
+      fireEvent.click(toggleBtn);
+
+      // Should still render without errors
+      await waitFor(() => {
+        const panel1 = screen.getByTestId('panel-1').parentElement;
+        const panel2 = screen.getByTestId('panel-2').parentElement;
+        expect(panel1?.style.width).toBeTruthy();
+        expect(panel2?.style.width).toBeTruthy();
+      });
+    });
+
+    it('handles user scenario: conditional minSize based on layout', async () => {
+      // Simulates the user's specific use case:
+      // minSize={hasCompleteResponse ? (isVerticalLayout ? "5%" : "200px") : undefined}
+      function TestComponent() {
+        const [hasCompleteResponse, setHasCompleteResponse] = useState(false);
+        const [isVerticalLayout, setIsVerticalLayout] = useState(false);
+
+        const minSize = hasCompleteResponse
+          ? (isVerticalLayout ? '5%' : '200px')
+          : undefined;
+
+        return (
+          <div style={{ width: '1000px', height: '600px' }}>
+            <button
+              onClick={() => setHasCompleteResponse(!hasCompleteResponse)}
+              data-testid="toggle-response"
+            >
+              Toggle Response
+            </button>
+            <button
+              onClick={() => setIsVerticalLayout(!isVerticalLayout)}
+              data-testid="toggle-layout"
+            >
+              Toggle Layout
+            </button>
+            <PanelGroup direction={isVerticalLayout ? 'vertical' : 'horizontal'}>
+              <Panel defaultSize="50%" minSize={minSize} className="overflow-hidden">
+                <div data-testid="panel-1">Panel 1</div>
+              </Panel>
+              <Panel defaultSize="50%">
+                <div data-testid="panel-2">Panel 2</div>
+              </Panel>
+            </PanelGroup>
+          </div>
+        );
+      }
+
+      render(<TestComponent />);
+
+      // Initially: hasCompleteResponse=false, minSize=undefined
+      await waitFor(() => {
+        const panel1 = screen.getByTestId('panel-1').parentElement;
+        expect(panel1?.style.width).toBeTruthy();
+      });
+
+      // Set hasCompleteResponse=true, isVerticalLayout=false → minSize="200px"
+      const toggleResponse = screen.getByTestId('toggle-response');
+      fireEvent.click(toggleResponse);
+
+      await waitFor(() => {
+        const panel1 = screen.getByTestId('panel-1').parentElement;
+        expect(panel1?.style.width).toBeTruthy();
+      });
+
+      // Toggle layout: isVerticalLayout=true → minSize="5%"
+      const toggleLayout = screen.getByTestId('toggle-layout');
+      fireEvent.click(toggleLayout);
+
+      await waitFor(() => {
+        const panel1 = screen.getByTestId('panel-1').parentElement;
+        expect(panel1?.style.height).toBeTruthy();
+      });
+
+      // Toggle response back: hasCompleteResponse=false → minSize=undefined
+      fireEvent.click(toggleResponse);
+
+      await waitFor(() => {
+        const panel1 = screen.getByTestId('panel-1').parentElement;
+        const panel2 = screen.getByTestId('panel-2').parentElement;
+        expect(panel1?.style.height).toBeTruthy();
+        expect(panel2?.style.height).toBeTruthy();
+      });
+
+      // Should never throw "Invalid size format: NaNundefined" error
+    });
+
+    it('handles maxSize={undefined} without errors', async () => {
+      render(
+        <div style={{ width: '1000px', height: '600px' }}>
+          <PanelGroup direction="horizontal">
+            <Panel defaultSize="50%" maxSize={undefined}>
+              <div data-testid="panel-1">Panel 1</div>
+            </Panel>
+            <Panel defaultSize="50%">
+              <div data-testid="panel-2">Panel 2</div>
+            </Panel>
+          </PanelGroup>
+        </div>
+      );
+
+      await waitFor(() => {
+        const panel1 = screen.getByTestId('panel-1').parentElement;
+        const panel2 = screen.getByTestId('panel-2').parentElement;
+        expect(panel1?.style.width).toBeTruthy();
+        expect(panel2?.style.width).toBeTruthy();
+      });
+    });
+  });
 });
