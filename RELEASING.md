@@ -36,82 +36,72 @@ Copy the token that's displayed (starts with `npm_...`).
 
 ## Publishing a New Version
 
-### Step 1: Update Version Number
+### Step 1: Update CHANGELOG.md
 
-Update the version in `package.json`:
+Add your changes to the `[Unreleased]` section of `CHANGELOG.md`:
+
+```markdown
+## [Unreleased]
+
+### Added
+- New feature description
+
+### Changed
+- Modified behavior description
+
+### Fixed
+- Bug fix description
+```
+
+Commit and push this to main:
+
+```bash
+git add CHANGELOG.md
+git commit -m "docs: Update changelog for vX.Y.Z"
+git push origin main
+```
+
+### Step 2: Create and Push Version Tag
 
 ```bash
 # For a patch release (bug fixes): 0.1.0 → 0.1.1
-npm version patch
+git tag v0.1.1
 
 # For a minor release (new features): 0.1.0 → 0.2.0
-npm version minor
+git tag v0.2.0
 
 # For a major release (breaking changes): 0.1.0 → 1.0.0
-npm version major
+git tag v1.0.0
+
+# Push the tag
+git push origin v0.1.1  # (use your version)
 ```
 
-This will:
-- Update `package.json`
-- Create a git commit: "Bump version to x.y.z"
-- Create a git tag: `vx.y.z`
+### Step 3: Watch the Magic Happen! ✨
 
-### Step 2: Push Changes
+Once you push the tag, the release workflow (`.github/workflows/release.yml`) will automatically:
 
-```bash
-# Push the commit and tag
-git push origin main --tags
-```
+1. ✅ Update `package.json` to match the tag version
+2. ✅ Move CHANGELOG `[Unreleased]` section to `[X.Y.Z] - YYYY-MM-DD`
+3. ✅ Commit these changes back to main
+4. ✅ Create GitHub Release with changelog content as release notes
+5. ✅ Trigger npm publish workflow which:
+   - Runs all tests
+   - Builds the package
+   - Publishes to npm with `--access public`
 
-### Step 3: Create GitHub Release
-
-**Option A: Via GitHub Web UI**
-
-1. Go to https://github.com/jeremy-boschen/react-adjustable-panels/releases
-2. Click **"Draft a new release"**
-3. Click **"Choose a tag"** and select the tag you just pushed (e.g., `v0.1.1`)
-4. **Release title:** Same as tag (e.g., `v0.1.1`)
-5. **Description:** Add release notes (see below for template)
-6. Click **"Publish release"**
-
-**Option B: Via GitHub CLI** (faster!)
-
-```bash
-# Create a release (replace version and notes)
-gh release create v0.1.1 \
-  --title "v0.1.1" \
-  --notes "
-## What's Changed
-
-- Fixed cursor drift during resize drag (#123)
-- Improved constraint handling (#124)
-
-## Full Changelog
-
-https://github.com/jeremy-boschen/react-adjustable-panels/compare/v0.1.0...v0.1.1
-"
-```
-
-### Step 4: Watch the Magic Happen! ✨
-
-Once you publish the GitHub release, the publish workflow (`.github/workflows/publish.yml`) will automatically:
-
-1. ✅ Checkout the code
-2. ✅ Install dependencies
-3. ✅ Run all tests
-4. ✅ Build the package
-5. ✅ Publish to npm with `--access public`
-
-**Monitor the workflow:**
+**Monitor the workflows:**
 - Go to https://github.com/jeremy-boschen/react-adjustable-panels/actions
-- You'll see a "Publish to npm" workflow running
-- It takes about 2-3 minutes
+- You'll see "Release" workflow running first
+- Followed by "Publish to npm" workflow
+- Takes about 3-5 minutes total
 
 **When it completes:**
+- Check GitHub Releases: https://github.com/jeremy-boschen/react-adjustable-panels/releases
 - Check npm: https://www.npmjs.com/package/@jeremy-boschen/react-adjustable-panels
-- Your new version should be published!
+- Your new version should be live!
 
-### Step 5: Verify Publication
+### Step 4: Verify Publication
 
 ```bash
 # Check the latest version on npm
@@ -119,42 +109,6 @@ npm view @jeremy-boschen/react-adjustable-panels version
 
 # Test installation
 npm install @jeremy-boschen/react-adjustable-panels@latest
-```
-
-## Release Notes Template
-
-Use this template when creating releases:
-
-```markdown
-## What's Changed
-
-### ✨ New Features
-- Added support for X (#PR)
-- Implemented Y feature (#PR)
-
-### 🐛 Bug Fixes
-- Fixed issue with Z (#PR)
-- Resolved problem where... (#PR)
-
-### 🔧 Improvements
-- Improved performance of... (#PR)
-- Enhanced error messages (#PR)
-
-### 📚 Documentation
-- Updated README with... (#PR)
-- Added examples for... (#PR)
-
-### 🧪 Tests
-- Added tests for... (#PR)
-- Improved test coverage to X% (#PR)
-
-### 🏗️ Internal
-- Refactored... (#PR)
-- Updated dependencies (#PR)
-
-## Full Changelog
-
-https://github.com/jeremy-boschen/react-adjustable-panels/compare/v0.1.0...v0.1.1
 ```
 
 ## Versioning Guidelines
