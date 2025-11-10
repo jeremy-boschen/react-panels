@@ -64,17 +64,15 @@ Once you push the tag, `.github/workflows/release.yml` automatically:
 2. ✅ Moves CHANGELOG `[Unreleased]` → `[1.2.3] - 2025-11-10`
 3. ✅ Creates new empty `[Unreleased]` section
 4. ✅ Commits changes back to main
-5. ✅ Creates GitHub Release with changelog as release notes
-6. ✅ Triggers `.github/workflows/publish.yml` which:
-   - Runs all tests
-   - Builds the package
-   - Publishes to npm with `--access public`
+5. ✅ Installs dependencies and runs all tests
+6. ✅ Builds the package
+7. ✅ Publishes to npm with `--access public`
+8. ✅ Creates GitHub Release with changelog as release notes
 
 **Monitor progress:**
 - Go to https://github.com/jeremy-boschen/react-adjustable-panels/actions
-- "Release" workflow runs first (~1 min)
-- "Publish to npm" workflow runs second (~3-4 mins)
-- Total time: ~5 minutes
+- Single "Release" workflow runs (~5-7 minutes)
+- Everything happens in one workflow
 
 **Verify success:**
 - Check GitHub Releases: https://github.com/jeremy-boschen/react-adjustable-panels/releases
