@@ -30,50 +30,6 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
 
-      - name: Extract version from tag
-        id: version
-        run: |
-          TAG=${GITHUB_REF#refs/tags/}
-          VERSION=${TAG#v}
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "date=$(date +%Y-%m-%d)" >> $GITHUB_OUTPUT
-
-      - name: Update package.json version
-        run: |
-          yarn version ${{ steps.version.outputs.version }}
-
-      - name: Update CHANGELOG.md
-        run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          DATE="${{ steps.version.outputs.date }}"
-
-          # Create a temporary file
-          TEMP_FILE=$(mktemp)
-
-          # Read the CHANGELOG and update it
-          awk -v version="$VERSION" -v date="$DATE" '
-            /^## \[Unreleased\]/ {
-              print $0
-              print ""
-              print "## [" version "] - " date
-              found_unreleased = 1
-              next
-            }
-            { print }
-          ' CHANGELOG.md > "$TEMP_FILE"
-
-          # Replace original file
-          mv "$TEMP_FILE" CHANGELOG.md
-
-      - name: Commit version bump
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add package.json CHANGELOG.md
-          git commit -m "chore: Release ${{ steps.version.outputs.version }}"
-          git push origin HEAD:main
-
       - name: Cache Yarn dependencies
         uses: actions/cache@v4
         with:
@@ -114,6 +70,43 @@ jobs:
       - name: Build
         run: yarn build
 
+      # Prepare release
+      - name: Extract version from tag
+        id: version
+        run: |
+          TAG=${GITHUB_REF#refs/tags/}
+          VERSION=${TAG#v}
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "date=$(date +%Y-%m-%d)" >> $GITHUB_OUTPUT
+
+      - name: Update package.json version
+        run: |
+          yarn version ${{ steps.version.outputs.version }}
+
+      - name: Update CHANGELOG.md
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          DATE="${{ steps.version.outputs.date }}"
+
+          # Create a temporary file
+          TEMP_FILE=$(mktemp)
+
+          # Read the CHANGELOG and update it
+          awk -v version="$VERSION" -v date="$DATE" '
+            /^## \[Unreleased\]/ {
+              print $0
+              print ""
+              print "## [" version "] - " date
+              found_unreleased = 1
+              next
+            }
+            { print }
+          ' CHANGELOG.md > "$TEMP_FILE"
+
+          # Replace original file
+          mv "$TEMP_FILE" CHANGELOG.md  
+
       - name: Extract release notes from CHANGELOG
         id: release_notes
         run: |
@@ -133,6 +126,14 @@ jobs:
           fi
 
           cat release_notes.txt
+
+      - name: Commit version bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add package.json CHANGELOG.md
+          git commit -m "chore: Release ${{ steps.version.outputs.version }}"
+          git push origin HEAD:main      
 
       - name: Create GitHub Release
         env:
