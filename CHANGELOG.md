@@ -7,8 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.2.1] - 2025-11-10
-
 ### Added
 - Support for wrapping `Panel` and `ResizeHandle` components in arbitrary React elements (divs, fragments, conditional renders, etc.)
 - Recursive child discovery using `childUtils.ts` to find panels and handles at any nesting depth
