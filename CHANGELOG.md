@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fixed "Invalid size format: NaNundefined" error when Panel props (`minSize`, `maxSize`, `defaultSize`) receive `undefined`
+- Fixed React warnings about unknown props being passed to DOM elements (`minSize`, `maxSize`, etc.)
+
+### Changed
+- Improved prop normalization architecture with dedicated normalize functions per component (`normalizePanelProps`, `normalizePanelGroupProps`, `normalizeResizeHandleProps`)
+- Enhanced error messages for size parsing to help diagnose state synchronization issues
+- Refactored components to normalize props at component boundaries following "parse, don't validate" principle
+
+### Added
+- Created `AGENTS.md` with comprehensive AI agent instructions for repository development
+
 ## [0.2.1] - 2025-11-10
 
 ### Added

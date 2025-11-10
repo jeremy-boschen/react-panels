@@ -128,6 +128,92 @@ Before creating a PR, ensure:
 - [ ] CHANGELOG.md updated in `[Unreleased]` section
 - [ ] Test coverage maintained at 90%+
 
+## Creating a Pull Request
+
+### PR Title Format
+
+Use conventional commit format:
+- `fix: Brief description` - Bug fixes
+- `feat: Brief description` - New features
+- `refactor: Brief description` - Code refactoring
+- `test: Brief description` - Test additions/improvements
+- `docs: Brief description` - Documentation changes
+
+### PR Description Template
+
+Include these sections in your PR description:
+
+```markdown
+## Summary
+Brief overview of what this PR does and why
+
+Fixes #[issue-number]
+
+## Changes
+- Bullet list of changes
+- Be specific about what was modified
+
+## Testing
+- [ ] All existing tests pass
+- [ ] Added X new test cases covering:
+  - Specific test scenario 1
+  - Specific test scenario 2
+
+## Example Usage (if applicable)
+\`\`\`tsx
+// Code example showing the change
+\`\`\`
+
+## Checklist
+- [ ] Tests added for new features
+- [ ] All tests pass
+- [ ] Type checking passes
+- [ ] Linting passes
+- [ ] Build succeeds
+- [ ] CHANGELOG.md updated
+- [ ] Test coverage maintained at 90%+
+```
+
+### Creating the PR
+
+**Using GitHub CLI (recommended):**
+
+```bash
+# Ensure all changes are committed and pushed
+git push -u origin your-branch-name
+
+# Create PR with title and body
+gh pr create \
+  --title "fix: Handle undefined minSize prop" \
+  --body "$(cat PR_DESCRIPTION.md)" \
+  --base main
+
+# Or create PR interactively
+gh pr create
+```
+
+**Using GitHub Web UI:**
+
+1. Go to repository on GitHub
+2. Click "Pull requests" tab
+3. Click "New pull request"
+4. Select your branch
+5. Fill in title and description
+6. Click "Create pull request"
+
+### After Creating PR
+
+- Watch for CI checks to complete
+- Address any review feedback
+- Keep PR updated with main if needed:
+  ```bash
+  git checkout main
+  git pull origin main
+  git checkout your-branch-name
+  git rebase main
+  git push --force-with-lease
+  ```
+
 ## Testing Best Practices
 
 ### Writing Tests
