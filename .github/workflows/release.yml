@@ -38,7 +38,7 @@ jobs:
 
       - name: Update package.json version
         run: |
-          yarn version ${{ steps.version.outputs.version }} --no-git-tag-version
+          yarn version ${{ steps.version.outputs.version }}
 
       - name: Update CHANGELOG.md
         run: |
