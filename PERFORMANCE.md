@@ -346,16 +346,7 @@ function onRenderCallback(
 - **Cause**: Not cleaning up refs/listeners
 - **Fix**: Ensure proper cleanup in useEffect
 
-## Comparison with Other Libraries
-
-| Library | Discovery Method | Wrapped Support | Performance |
-|---------|-----------------|-----------------|-------------|
-| react-adjustable-panels | Recursive | ✅ Yes | Fast (memoized) |
-| react-resizable-panels | Flat only | ❌ No | Fastest (no traversal) |
-| react-split-pane | Flat only | ❌ No | Fast |
-| allotment | Flat only | ❌ No | Fast |
-
-**Trade-off**: We accept ~5-10% performance overhead for significantly improved developer experience and flexibility.
+**Trade-off**: We accept ~5-10% performance overhead for significantly improved developer experience and flexibility. This overhead is due to recursive child traversal, which enables wrapping components in arbitrary React elements.
 
 ## Future Optimizations
 
