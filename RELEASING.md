@@ -2,12 +2,18 @@
 
 This document describes how to publish a new version of @jeremy-boschen/react-adjustable-panels to npm.
 
+## Overview
+
+**For contributors:** Update CHANGELOG.md `[Unreleased]` section in your PRs (it's in the PR checklist).
+
+**For maintainers:** When ready to release, just push a version tag. Automation handles everything else.
+
 ## Prerequisites
 
-Before you can publish, ensure you have:
+One-time setup for maintainers:
 
 1. **npm account** - https://www.npmjs.com/signup
-2. **npm token** added to GitHub Secrets (one-time setup - see below)
+2. **npm token** added to GitHub Secrets (see below)
 3. **Write access** to the repository
 
 ## One-Time Setup: npm Token
@@ -32,84 +38,47 @@ Copy the token that's displayed (starts with `npm_...`).
 4. **Value:** Paste your npm token (the one starting with `npm_...`)
 5. Click **"Add secret"**
 
-✅ **That's it!** You only need to do this once. The GitHub Actions workflow will now be able to publish to npm automatically.
+✅ **That's it!** The GitHub Actions workflow can now publish to npm automatically.
 
 ## Publishing a New Version
 
-### Step 1: Update CHANGELOG.md
+### The Simple Version
 
-Add your changes to the `[Unreleased]` section of `CHANGELOG.md`:
+**CHANGELOG updates happen during PRs, not at release time!**
 
-```markdown
-## [Unreleased]
-
-### Added
-- New feature description
-
-### Changed
-- Modified behavior description
-
-### Fixed
-- Bug fix description
-```
-
-Commit and push this to main:
+When you're ready to release:
 
 ```bash
-git add CHANGELOG.md
-git commit -m "docs: Update changelog for vX.Y.Z"
-git push origin main
+# Create and push a version tag
+git tag v1.2.3
+git push origin v1.2.3
+
+# Done! Automation handles the rest.
 ```
 
-### Step 2: Create and Push Version Tag
+### What Happens Automatically
 
-```bash
-# For a patch release (bug fixes): 0.1.0 → 0.1.1
-git tag v0.1.1
+Once you push the tag, `.github/workflows/release.yml` automatically:
 
-# For a minor release (new features): 0.1.0 → 0.2.0
-git tag v0.2.0
-
-# For a major release (breaking changes): 0.1.0 → 1.0.0
-git tag v1.0.0
-
-# Push the tag
-git push origin v0.1.1  # (use your version)
-```
-
-### Step 3: Watch the Magic Happen! ✨
-
-Once you push the tag, the release workflow (`.github/workflows/release.yml`) will automatically:
-
-1. ✅ Update `package.json` to match the tag version
-2. ✅ Move CHANGELOG `[Unreleased]` section to `[X.Y.Z] - YYYY-MM-DD`
-3. ✅ Commit these changes back to main
-4. ✅ Create GitHub Release with changelog content as release notes
-5. ✅ Trigger npm publish workflow which:
+1. ✅ Updates `package.json` to match tag version
+2. ✅ Moves CHANGELOG `[Unreleased]` → `[1.2.3] - 2025-11-10`
+3. ✅ Creates new empty `[Unreleased]` section
+4. ✅ Commits changes back to main
+5. ✅ Creates GitHub Release with changelog as release notes
+6. ✅ Triggers `.github/workflows/publish.yml` which:
    - Runs all tests
    - Builds the package
    - Publishes to npm with `--access public`
 
-**Monitor the workflows:**
+**Monitor progress:**
 - Go to https://github.com/jeremy-boschen/react-adjustable-panels/actions
-- You'll see "Release" workflow running first
-- Followed by "Publish to npm" workflow
-- Takes about 3-5 minutes total
+- "Release" workflow runs first (~1 min)
+- "Publish to npm" workflow runs second (~3-4 mins)
+- Total time: ~5 minutes
 
-**When it completes:**
+**Verify success:**
 - Check GitHub Releases: https://github.com/jeremy-boschen/react-adjustable-panels/releases
 - Check npm: https://www.npmjs.com/package/@jeremy-boschen/react-adjustable-panels
-- Your new version should be live!
-
-### Step 4: Verify Publication
-
-```bash
-# Check the latest version on npm
-npm view @jeremy-boschen/react-adjustable-panels version
-
-# Test installation
-npm install @jeremy-boschen/react-adjustable-panels@latest
-```
 
 ## Versioning Guidelines
 
@@ -119,61 +88,155 @@ Follow [Semantic Versioning](https://semver.org/):
 - **Minor (0.1.0 → 0.2.0)**: New features, non-breaking API additions
 - **Major (0.1.0 → 1.0.0)**: Breaking changes, API removals
 
+Examples:
+```bash
+git tag v0.1.1  # Patch: bug fixes
+git tag v0.2.0  # Minor: new features
+git tag v1.0.0  # Major: breaking changes
+git push origin v0.1.1  # Push the tag
+```
+
+## Manual Publishing (Emergency Fallback)
+
+If automation fails, you can publish manually using Yarn:
+
+### Setup
+
+```bash
+# Enable corepack (manages Yarn versions)
+corepack enable
+
+# Install dependencies
+yarn install
+
+# Install Playwright browsers for tests
+yarn setup:browsers
+```
+
+### Publish
+
+```bash
+# Update version in package.json
+yarn version 0.1.2
+
+# Run pre-publish checks
+yarn publish:check  # Runs tests + build
+
+# Publish to npm
+yarn npm publish --access public
+```
+
+**Authentication options:**
+
+1. **Environment variable (recommended):**
+   ```bash
+   export NPM_TOKEN=npm_your-token-here
+   ```
+
+2. **Yarn login:**
+   ```bash
+   yarn npm login
+   ```
+
+3. **Direct in .npmrc (never commit!):**
+   ```
+   //registry.npmjs.org/:_authToken=npm_your-token-here
+   ```
+
 ## If Something Goes Wrong
 
 ### Unpublish a Version (within 72 hours)
 
 ```bash
-# Unpublish a specific version (use sparingly!)
+# Use sparingly - breaks dependent projects!
 npm unpublish @jeremy-boschen/react-adjustable-panels@0.1.1
-
-# Note: npm only allows unpublishing within 72 hours
 ```
 
 ### Deprecate a Version (preferred)
 
 ```bash
-# Deprecate a version (better than unpublishing)
-npm deprecate @jeremy-boschen/react-adjustable-panels@0.1.1 "This version has a critical bug. Please upgrade to 0.1.2"
+# Better than unpublishing
+npm deprecate @jeremy-boschen/react-adjustable-panels@0.1.1 "Critical bug. Please upgrade to 0.1.2"
 ```
 
 ### Delete a GitHub Release
 
 1. Go to https://github.com/jeremy-boschen/react-adjustable-panels/releases
-2. Click the release
-3. Click **"Delete"**
-4. Note: This doesn't unpublish from npm!
+2. Click the release → **"Delete"**
+3. Note: This doesn't unpublish from npm!
+
+### Fix a Failed Release
+
+If automation fails mid-release:
+
+1. Check Actions tab for error details
+2. Fix the issue (usually a failing test)
+3. Delete the tag locally and remotely:
+   ```bash
+   git tag -d v1.2.3
+   git push origin :refs/tags/v1.2.3
+   ```
+4. Push a new tag once fixed
 
 ## Troubleshooting
 
 ### "npm publish failed with 403"
 
-- Check that `NPM_TOKEN` secret is set correctly
+- Check `NPM_TOKEN` secret is set correctly in GitHub
 - Verify your npm account has permission to publish to `@jeremy-boschen` scope
+- Token may have expired - generate a new one
 
 ### "Tests failed"
 
-- The workflow will not publish if tests fail
-- Fix the tests and create a new release
+- Workflow won't publish if tests fail (by design)
+- Fix the tests locally: `yarn test`
+- Push fixes to main
+- Create new release tag
 
 ### "Package already exists"
 
 - You tried to publish a version that already exists
-- Bump the version number and try again
+- Delete the tag and create a new one with incremented version
+
+### "Tag already exists"
+
+```bash
+# Delete local tag
+git tag -d v1.2.3
+
+# Delete remote tag
+git push origin :refs/tags/v1.2.3
+
+# Create new tag
+git tag v1.2.4
+git push origin v1.2.4
+```
 
 ## Best Practices
 
 ✅ **DO:**
-- Test locally before releasing (`yarn test && yarn build`)
-- Write clear release notes
-- Follow semantic versioning
-- Keep a changelog up to date
+- Update CHANGELOG.md in every PR that makes user-facing changes
+- Test locally before releasing: `yarn test && yarn build`
+- Follow semantic versioning strictly
+- Use descriptive changelog entries
+- Double-check the tag version before pushing
 
 ❌ **DON'T:**
+- Push tags for unreleased work
+- Skip CHANGELOG updates in PRs
+- Publish directly via `yarn npm publish` (use tags instead)
+- Unpublish versions unless absolutely necessary (use deprecate)
 - Rush releases without testing
-- Skip version bumps
-- Publish directly via `npm publish` (use GitHub releases instead)
-- Unpublish versions if possible (use deprecate instead)
+
+## Why This Workflow?
+
+**Security:** Only maintainers with push access can create tags (same as manual releases).
+
+**Reliability:** Automation eliminates human error in version bumps, changelog updates, and release notes.
+
+**Consistency:** CHANGELOG, package.json, GitHub Releases, and npm always stay in sync.
+
+**Speed:** Push a tag and walk away. No manual steps.
 
 ## Questions?
 

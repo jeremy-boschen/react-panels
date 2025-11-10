@@ -17,11 +17,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Bundle size monitoring with 25KB/8KB (raw/gzip) budgets
 - Performance documentation (`PERFORMANCE.md`) with optimization guidance
 - Integrated performance tests and bundle size checks into CI workflow
+- CHANGELOG checklist item in PR template to ensure contributors document their changes
 
 ### Changed
 - `PanelGroup` now uses `useMemo` to optimize recursive traversal in render path
 - Performance tests run in jsdom (separate from browser tests) for consistent timing measurements
 - Test suite excludes performance tests from main run to avoid duplication
+- Merged PUBLISHING.md into RELEASING.md for unified release documentation
+- Clarified that CHANGELOG updates happen during PRs, not at release time
 
 ### Performance
 - Wrapped components have ~5% overhead vs direct children (well within acceptable range)
