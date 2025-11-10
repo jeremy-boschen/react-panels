@@ -17,6 +17,8 @@ dist-demo/
 
 # Testing
 coverage/
+src/__tests__/__screenshots__/
+src/__tests__/__reports__/
 
 # Environment
 .env

@@ -35,6 +35,11 @@ export default defineConfig({
                 statements: 90,
             },
         },
+        reporters: ['junit', 'json', 'default'],
+        outputFile: {
+            junit: './src/__tests__/__reports__/junit-report.xml',
+            json: './src/__tests__/__reports__/json-report.json',
+        },
     },
     resolve: {
         alias: {
