@@ -1,6 +1,6 @@
 {
   "name": "@jeremy-boschen/react-adjustable-panels",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Lightweight React adjustable panel library with pixel and percentage-based sizing",
   "type": "module",
   "packageManager": "yarn@4.11.0",

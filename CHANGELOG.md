@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.2] - 2025-11-10
+
 ### Fixed
 - Fixed "Invalid size format: NaNundefined" error when Panel props (`minSize`, `maxSize`, `defaultSize`) receive `undefined`
 - Fixed React warnings about unknown props being passed to DOM elements (`minSize`, `maxSize`, etc.)
