@@ -124,7 +124,11 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>(
         const rect = containerRef.current.getBoundingClientRect();
         const containerSize = direction === 'horizontal' ? rect.width : rect.height;
 
-        const pixels = calculateSizes(panelSizes, containerSize, constraintsRef.current);
+        // Defensive check: ensure all panel sizes are valid (not undefined)
+        // This prevents "NaNundefined" errors when state is out of sync
+        const validPanelSizes = panelSizes.map(size => size ?? 'auto');
+
+        const pixels = calculateSizes(validPanelSizes, containerSize, constraintsRef.current);
 
         // Override with collapsed sizes for panels that are collapsed
         // This prevents minSize enforcement from breaking collapsed state
@@ -343,7 +347,8 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>(
     // Helper to create PanelSizeInfo from pixel sizes
     const createSizeInfo = useCallback((pixelSizes: number[], containerSize: number): PanelSizeInfo[] => {
       return pixelSizes.map((pixels, i) => {
-        const unit = originalUnitsRef.current[i];
+        // Defensive check: ensure unit exists, default to 'auto' if undefined
+        const unit = originalUnitsRef.current[i] || 'auto';
         const percent = (pixels / containerSize) * 100;
         const value = convertFromPixels(pixels, containerSize, unit);
         const size = formatSize(value, unit);

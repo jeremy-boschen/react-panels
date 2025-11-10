@@ -16,7 +16,12 @@ export function parseSize(size: PanelSize | undefined): ParsedSize {
 
   const match = size.match(/^(\d+(?:\.\d+)?)(px|%)$/);
   if (!match) {
-    throw new Error(`Invalid size format: ${size}. Expected format: "123px", "45%", "auto", or "*"`);
+    const sizeType = typeof size;
+    const sizeValue = sizeType === 'object' ? JSON.stringify(size) : String(size);
+    throw new Error(
+      `Invalid size format: ${sizeValue} (type: ${sizeType}). Expected format: "123px", "45%", "auto", or "*". ` +
+      `If you're seeing "NaNundefined", this may indicate an internal state synchronization issue.`
+    );
   }
 
   const value = parseFloat(match[1]);
@@ -27,6 +32,10 @@ export function parseSize(size: PanelSize | undefined): ParsedSize {
 
 export function formatSize(value: number, unit: 'px' | '%' | 'auto'): PanelSize {
   if (unit === 'auto') {
+    return 'auto';
+  }
+  // Defensive check: handle invalid inputs
+  if (!unit || unit === 'undefined' || (typeof value === 'number' && isNaN(value))) {
     return 'auto';
   }
   return `${value}${unit}` as PanelSize;
