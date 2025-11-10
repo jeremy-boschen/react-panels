@@ -14,7 +14,7 @@ import {
 import { Panel } from './Panel';
 import { ResizeHandle, type ResizeHandleProps } from './ResizeHandle';
 import type { PanelGroupHandle, PanelGroupProps, PanelProps, PanelSize, PanelSizeInfo, ResizeInfo } from './types';
-import { calculateSizes, clampSize, convertFromPixels, convertToPixels, formatSize, parseSize } from './utils';
+import { calculateSizes, clampSize, convertFromPixels, convertToPixels, formatSize, normalizePanelSize, parseSize } from './utils';
 import { findPanelChildren, flattenPanelChildren } from './childUtils';
 
 export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>(
@@ -54,13 +54,20 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>(
 
       panelChildren.forEach(child => {
         const props = child.props as PanelProps;
-        const defaultSize = props.defaultSize;
-        const minSize = props.minSize;
-        const maxSize = props.maxSize;
 
-        newConstraints.push({ minSize, maxSize });
+        // Sanitize all size props at the component boundary
+        // Convert undefined → 'auto' to ensure internal functions receive valid inputs
+        const defaultSize = normalizePanelSize(props.defaultSize);
+        const minSize = normalizePanelSize(props.minSize);
+        const maxSize = normalizePanelSize(props.maxSize);
+        const collapsedSize = props.collapsedSize ? normalizePanelSize(props.collapsedSize) : undefined;
 
-        const collapsedSize = props.collapsedSize;
+        // Store normalized constraints (we keep undefined for collapsedSize since it's optional)
+        newConstraints.push({
+          minSize: minSize === 'auto' ? undefined : minSize,
+          maxSize: maxSize === 'auto' ? undefined : maxSize
+        });
+
         const defaultCollapsed = props.defaultCollapsed;
         const onCollapse = props.onCollapse;
 
@@ -75,13 +82,10 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>(
         if (initialCollapsed && collapsedSize) {
           newSizes.push(collapsedSize);
           newUnits.push(parseSize(collapsedSize).unit);
-        } else if (defaultSize) {
+        } else {
+          // Use normalized defaultSize (never undefined)
           newSizes.push(defaultSize);
           newUnits.push(parseSize(defaultSize).unit);
-        } else {
-          // Default to auto (fills remaining space)
-          newSizes.push('auto');
-          newUnits.push('auto');
         }
       });
 
@@ -124,11 +128,8 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>(
         const rect = containerRef.current.getBoundingClientRect();
         const containerSize = direction === 'horizontal' ? rect.width : rect.height;
 
-        // Defensive check: ensure all panel sizes are valid (not undefined)
-        // This prevents "NaNundefined" errors when state is out of sync
-        const validPanelSizes = panelSizes.map(size => size ?? 'auto');
-
-        const pixels = calculateSizes(validPanelSizes, containerSize, constraintsRef.current);
+        // panelSizes are already normalized at the component boundary, so no need for defensive checks here
+        const pixels = calculateSizes(panelSizes, containerSize, constraintsRef.current);
 
         // Override with collapsed sizes for panels that are collapsed
         // This prevents minSize enforcement from breaking collapsed state

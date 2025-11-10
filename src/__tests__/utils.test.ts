@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { PanelSize } from '../types';
-import { calculateSizes, convertFromPixels, convertToPixels, formatSize, parseSize } from '../utils';
+import { calculateSizes, convertFromPixels, convertToPixels, formatSize, normalizePanelSize, parseSize } from '../utils';
 
 describe('utils', () => {
   describe('parseSize', () => {
@@ -70,18 +70,21 @@ describe('utils', () => {
       expect(formatSize(0, 'auto')).toBe('auto');
     });
 
-    it('handles undefined unit gracefully', () => {
-      // @ts-expect-error - testing defensive behavior for invalid input
-      expect(formatSize(100, undefined)).toBe('auto');
-    });
-
-    it('handles NaN value gracefully', () => {
+    it('handles NaN value gracefully (state sync safety)', () => {
+      // This can occur during state synchronization issues where refs get out of sync
       expect(formatSize(NaN, 'px')).toBe('auto');
     });
+  });
 
-    it('handles invalid unit string gracefully', () => {
-      // @ts-expect-error - testing defensive behavior for invalid input
-      expect(formatSize(100, 'undefined')).toBe('auto');
+  describe('normalizePanelSize', () => {
+    it('returns size unchanged if already defined', () => {
+      expect(normalizePanelSize('100px' as PanelSize)).toBe('100px');
+      expect(normalizePanelSize('50%' as PanelSize)).toBe('50%');
+      expect(normalizePanelSize('auto')).toBe('auto');
+    });
+
+    it('converts undefined to auto', () => {
+      expect(normalizePanelSize(undefined)).toBe('auto');
     });
   });
 

@@ -3,6 +3,17 @@ import type { PanelSize, ParsedSize } from './types';
 // Declare process for Node/bundler environments
 declare const process: { env?: { NODE_ENV?: string } } | undefined;
 
+/**
+ * Normalizes a potentially undefined PanelSize to a valid PanelSize.
+ * This should be used at component boundaries to sanitize user input.
+ *
+ * @param size - The size prop value (may be undefined)
+ * @returns A valid PanelSize (defaults to 'auto' if undefined)
+ */
+export function normalizePanelSize(size: PanelSize | undefined): PanelSize {
+  return size ?? 'auto';
+}
+
 export function parseSize(size: PanelSize | undefined): ParsedSize {
   // Handle undefined (default to auto)
   if (size === undefined) {
@@ -34,8 +45,9 @@ export function formatSize(value: number, unit: 'px' | '%' | 'auto'): PanelSize 
   if (unit === 'auto') {
     return 'auto';
   }
-  // Defensive check: handle invalid inputs
-  if (!unit || unit === 'undefined' || (typeof value === 'number' && isNaN(value))) {
+  // Defensive check: handle NaN values that can occur during state synchronization issues
+  // This is a safety net for the edge case where refs get out of sync with state
+  if (Number.isNaN(value)) {
     return 'auto';
   }
   return `${value}${unit}` as PanelSize;
