@@ -2732,4 +2732,244 @@ describe('PanelGroup Integration Tests', () => {
       });
     });
   });
+
+  describe('Dynamic Panels', () => {
+    it('handles dynamically added panels with correct initial sizes', async () => {
+      function TestComponent() {
+        const [panelCount, setPanelCount] = useState(2);
+
+        return (
+          <div style={{ width: '1000px', height: '600px' }}>
+            <button onClick={() => setPanelCount(3)} data-testid="add-panel-btn">
+              Add Panel
+            </button>
+            <PanelGroup direction="vertical">
+              <Panel defaultSize="50%" minSize="100px">
+                <div data-testid="panel-1">Panel 1</div>
+              </Panel>
+              <Panel defaultSize="50%" minSize="100px">
+                <div data-testid="panel-2">Panel 2</div>
+              </Panel>
+              {panelCount === 3 && (
+                <Panel defaultSize="50%" minSize="110px">
+                  <div data-testid="panel-3">Panel 3</div>
+                </Panel>
+              )}
+            </PanelGroup>
+          </div>
+        );
+      }
+
+      render(<TestComponent />);
+
+      // Initial state: 2 panels
+      await waitFor(() => {
+        const panel1 = screen.getByTestId('panel-1').parentElement;
+        const panel2 = screen.getByTestId('panel-2').parentElement;
+        expect(panel1?.style.height).toBeTruthy();
+        expect(panel2?.style.height).toBeTruthy();
+        // Should not be 0px
+        expect(panel1?.style.height).not.toBe('0px');
+        expect(panel2?.style.height).not.toBe('0px');
+      });
+
+      // Add a third panel dynamically
+      const addButton = screen.getByTestId('add-panel-btn');
+      fireEvent.click(addButton);
+
+      // New panel should render with correct size (not 0px)
+      await waitFor(() => {
+        const panel3 = screen.getByTestId('panel-3').parentElement;
+        expect(panel3?.style.height).toBeTruthy();
+        expect(panel3?.style.height).not.toBe('0px');
+        // Verify it has a reasonable height value
+        const height = parseFloat(panel3?.style.height || '0');
+        expect(height).toBeGreaterThan(0);
+      });
+    });
+
+    it('handles resizing after dynamically adding panels without errors', async () => {
+      function TestComponent() {
+        const [panelCount, setPanelCount] = useState(2);
+
+        return (
+          <div style={{ width: '1000px', height: '600px' }}>
+            <button onClick={() => setPanelCount(3)} data-testid="add-panel-btn">
+              Add Panel
+            </button>
+            <PanelGroup direction="vertical">
+              <Panel defaultSize="40%">
+                <div data-testid="panel-1">Panel 1</div>
+              </Panel>
+              <Panel defaultSize="30%">
+                <div data-testid="panel-2">Panel 2</div>
+              </Panel>
+              {panelCount === 3 && (
+                <Panel defaultSize="30%">
+                  <div data-testid="panel-3">Panel 3</div>
+                </Panel>
+              )}
+            </PanelGroup>
+          </div>
+        );
+      }
+
+      const { container } = render(<TestComponent />);
+
+      // Add a third panel dynamically
+      const addButton = screen.getByTestId('add-panel-btn');
+      fireEvent.click(addButton);
+
+      await waitFor(() => {
+        const panel3 = screen.getByTestId('panel-3').parentElement;
+        expect(panel3).toBeTruthy();
+      });
+
+      // Try to resize - this should not throw "Invalid size format: NaNundefined"
+      const handles = container.querySelectorAll('[data-resize-handle="true"]');
+      expect(handles.length).toBeGreaterThan(0);
+
+      const handle = handles[0];
+      const startY = 200;
+      const moveY = 250;
+
+      // Should not throw any errors during resize
+      fireEvent.mouseDown(handle, { clientY: startY, button: 0 });
+      fireEvent.mouseMove(document, { clientY: moveY, button: 0 });
+      fireEvent.mouseUp(document, { button: 0 });
+
+      // Verify panels still have valid sizes
+      await waitFor(() => {
+        const panel1 = screen.getByTestId('panel-1').parentElement;
+        const panel2 = screen.getByTestId('panel-2').parentElement;
+        const panel3 = screen.getByTestId('panel-3').parentElement;
+
+        expect(panel1?.style.height).toBeTruthy();
+        expect(panel2?.style.height).toBeTruthy();
+        expect(panel3?.style.height).toBeTruthy();
+
+        // Verify sizes are valid (not 0px, not NaN, not undefined)
+        expect(panel1?.style.height).toMatch(/^\d+(\.\d+)?px$/);
+        expect(panel2?.style.height).toMatch(/^\d+(\.\d+)?px$/);
+        expect(panel3?.style.height).toMatch(/^\d+(\.\d+)?px$/);
+      });
+    });
+
+    it('handles dynamically removed panels', async () => {
+      function TestComponent() {
+        const [panelCount, setPanelCount] = useState(3);
+
+        return (
+          <div style={{ width: '1000px', height: '600px' }}>
+            <button onClick={() => setPanelCount(2)} data-testid="remove-panel-btn">
+              Remove Panel
+            </button>
+            <PanelGroup direction="horizontal">
+              <Panel defaultSize="33%">
+                <div data-testid="panel-1">Panel 1</div>
+              </Panel>
+              <Panel defaultSize="33%">
+                <div data-testid="panel-2">Panel 2</div>
+              </Panel>
+              {panelCount === 3 && (
+                <Panel defaultSize="34%">
+                  <div data-testid="panel-3">Panel 3</div>
+                </Panel>
+              )}
+            </PanelGroup>
+          </div>
+        );
+      }
+
+      render(<TestComponent />);
+
+      // Initial state: 3 panels
+      await waitFor(() => {
+        const panel3 = screen.getByTestId('panel-3').parentElement;
+        expect(panel3).toBeTruthy();
+      });
+
+      // Remove third panel
+      const removeButton = screen.getByTestId('remove-panel-btn');
+      fireEvent.click(removeButton);
+
+      // Verify panel 3 is removed and panels 1 & 2 still have valid sizes
+      await waitFor(() => {
+        expect(screen.queryByTestId('panel-3')).not.toBeInTheDocument();
+
+        const panel1 = screen.getByTestId('panel-1').parentElement;
+        const panel2 = screen.getByTestId('panel-2').parentElement;
+
+        expect(panel1?.style.width).toBeTruthy();
+        expect(panel2?.style.width).toBeTruthy();
+        expect(panel1?.style.width).not.toBe('0px');
+        expect(panel2?.style.width).not.toBe('0px');
+      });
+    });
+
+    it('maintains correct state when panel count changes multiple times', async () => {
+      function TestComponent() {
+        const [panelCount, setPanelCount] = useState(2);
+
+        return (
+          <div style={{ width: '1000px', height: '600px' }}>
+            <button onClick={() => setPanelCount(3)} data-testid="add-btn">
+              Add
+            </button>
+            <button onClick={() => setPanelCount(2)} data-testid="remove-btn">
+              Remove
+            </button>
+            <PanelGroup direction="horizontal">
+              <Panel defaultSize="50%">
+                <div data-testid="panel-1">Panel 1</div>
+              </Panel>
+              <Panel defaultSize="50%">
+                <div data-testid="panel-2">Panel 2</div>
+              </Panel>
+              {panelCount === 3 && (
+                <Panel defaultSize="33%">
+                  <div data-testid="panel-3">Panel 3</div>
+                </Panel>
+              )}
+            </PanelGroup>
+          </div>
+        );
+      }
+
+      render(<TestComponent />);
+
+      const addButton = screen.getByTestId('add-btn');
+      const removeButton = screen.getByTestId('remove-btn');
+
+      // Add panel
+      fireEvent.click(addButton);
+      await waitFor(() => {
+        const panel3 = screen.getByTestId('panel-3').parentElement;
+        expect(panel3?.style.width).not.toBe('0px');
+      });
+
+      // Remove panel
+      fireEvent.click(removeButton);
+      await waitFor(() => {
+        expect(screen.queryByTestId('panel-3')).not.toBeInTheDocument();
+      });
+
+      // Add again
+      fireEvent.click(addButton);
+      await waitFor(() => {
+        const panel3 = screen.getByTestId('panel-3').parentElement;
+        expect(panel3?.style.width).toBeTruthy();
+        expect(panel3?.style.width).not.toBe('0px');
+      });
+
+      // All panels should still have valid sizes
+      const panel1 = screen.getByTestId('panel-1').parentElement;
+      const panel2 = screen.getByTestId('panel-2').parentElement;
+      const panel3 = screen.getByTestId('panel-3').parentElement;
+
+      expect(panel1?.style.width).toMatch(/^\d+(\.\d+)?px$/);
+      expect(panel2?.style.width).toMatch(/^\d+(\.\d+)?px$/);
+      expect(panel3?.style.width).toMatch(/^\d+(\.\d+)?px$/);
+    });
+  });
 });
