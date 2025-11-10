@@ -2527,16 +2527,10 @@ describe('PanelGroup Integration Tests', () => {
 
         return (
           <div style={{ width: '1000px', height: '600px' }}>
-            <button
-              onClick={() => groupRef.current?.collapsePanel(0)}
-              data-testid="collapse-btn"
-            >
+            <button onClick={() => groupRef.current?.collapsePanel(0)} data-testid="collapse-btn">
               Collapse
             </button>
-            <button
-              onClick={() => groupRef.current?.expandPanel(0)}
-              data-testid="expand-btn"
-            >
+            <button onClick={() => groupRef.current?.expandPanel(0)} data-testid="expand-btn">
               Expand
             </button>
             <PanelGroup ref={groupRef} direction="horizontal">
@@ -2655,22 +2649,14 @@ describe('PanelGroup Integration Tests', () => {
         const [hasCompleteResponse, setHasCompleteResponse] = useState(false);
         const [isVerticalLayout, setIsVerticalLayout] = useState(false);
 
-        const minSize = hasCompleteResponse
-          ? (isVerticalLayout ? '5%' : '200px')
-          : undefined;
+        const minSize = hasCompleteResponse ? (isVerticalLayout ? '5%' : '200px') : undefined;
 
         return (
           <div style={{ width: '1000px', height: '600px' }}>
-            <button
-              onClick={() => setHasCompleteResponse(!hasCompleteResponse)}
-              data-testid="toggle-response"
-            >
+            <button onClick={() => setHasCompleteResponse(!hasCompleteResponse)} data-testid="toggle-response">
               Toggle Response
             </button>
-            <button
-              onClick={() => setIsVerticalLayout(!isVerticalLayout)}
-              data-testid="toggle-layout"
-            >
+            <button onClick={() => setIsVerticalLayout(!isVerticalLayout)} data-testid="toggle-layout">
               Toggle Layout
             </button>
             <PanelGroup direction={isVerticalLayout ? 'vertical' : 'horizontal'}>

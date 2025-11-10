@@ -4,15 +4,8 @@ import type { PanelProps } from './types';
 
 export const Panel = forwardRef<HTMLDivElement, PanelProps>((rawProps, ref) => {
   // Normalize props at component boundary - converts undefined → defaults
-  const {
-    defaultSize,
-    minSize,
-    maxSize,
-    collapsedSize,
-    defaultCollapsed,
-    className,
-    style,
-  } = normalizePanelProps(rawProps);
+  const { defaultSize, minSize, maxSize, collapsedSize, defaultCollapsed, className, style } =
+    normalizePanelProps(rawProps);
 
   // Extract Panel-specific props to avoid passing them to DOM
   const {

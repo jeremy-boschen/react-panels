@@ -1,5 +1,5 @@
 import { fireEvent, render } from '@testing-library/react';
-import { type ProfilerOnRenderCallback, Profiler } from 'react';
+import { Profiler, type ProfilerOnRenderCallback } from 'react';
 import { describe, expect, it } from 'vitest';
 import { Panel } from '../Panel';
 import { PanelGroup } from '../PanelGroup';
@@ -16,11 +16,7 @@ describe('Performance Regression Tests', () => {
     it('BASELINE: mounts 2 panels within budget (< 50ms)', async () => {
       const renderTimes: number[] = [];
 
-      const onRender: ProfilerOnRenderCallback = (
-        _id,
-        _phase,
-        actualDuration
-      ) => {
+      const onRender: ProfilerOnRenderCallback = (_id, _phase, actualDuration) => {
         renderTimes.push(actualDuration);
       };
 
@@ -47,11 +43,7 @@ describe('Performance Regression Tests', () => {
     it('BASELINE: mounts 10 panels within budget (< 100ms)', async () => {
       const renderTimes: number[] = [];
 
-      const onRender: ProfilerOnRenderCallback = (
-        _id,
-        _phase,
-        actualDuration
-      ) => {
+      const onRender: ProfilerOnRenderCallback = (_id, _phase, actualDuration) => {
         renderTimes.push(actualDuration);
       };
 
@@ -82,11 +74,7 @@ describe('Performance Regression Tests', () => {
     it('BASELINE: single resize update < 16ms (60fps)', async () => {
       const updateTimes: number[] = [];
 
-      const onRender: ProfilerOnRenderCallback = (
-        _id,
-        phase,
-        actualDuration
-      ) => {
+      const onRender: ProfilerOnRenderCallback = (_id, phase, actualDuration) => {
         if (phase === 'update') {
           updateTimes.push(actualDuration);
         }
@@ -122,11 +110,7 @@ describe('Performance Regression Tests', () => {
     it('BASELINE: resize with 10 panels < 16ms', async () => {
       const updateTimes: number[] = [];
 
-      const onRender: ProfilerOnRenderCallback = (
-        _id,
-        phase,
-        actualDuration
-      ) => {
+      const onRender: ProfilerOnRenderCallback = (_id, phase, actualDuration) => {
         if (phase === 'update') {
           updateTimes.push(actualDuration);
         }
@@ -166,11 +150,7 @@ describe('Performance Regression Tests', () => {
       let renderCount = 0;
       const renderTimes: number[] = [];
 
-      const onRender: ProfilerOnRenderCallback = (
-        _id,
-        _phase,
-        actualDuration
-      ) => {
+      const onRender: ProfilerOnRenderCallback = (_id, _phase, actualDuration) => {
         renderCount++;
         renderTimes.push(actualDuration);
       };
@@ -280,11 +260,7 @@ describe('Performance Regression Tests', () => {
       for (const panelCount of [2, 5, 10, 20]) {
         const renderTimes: number[] = [];
 
-        const onRender: ProfilerOnRenderCallback = (
-          _id,
-          _phase,
-          actualDuration
-        ) => {
+        const onRender: ProfilerOnRenderCallback = (_id, _phase, actualDuration) => {
           renderTimes.push(actualDuration);
         };
 
@@ -349,11 +325,7 @@ describe('Performance Regression Tests', () => {
     it('BASELINE: nested groups perform within budget', async () => {
       const renderTimes: number[] = [];
 
-      const onRender: ProfilerOnRenderCallback = (
-        _id,
-        _phase,
-        actualDuration
-      ) => {
+      const onRender: ProfilerOnRenderCallback = (_id, _phase, actualDuration) => {
         renderTimes.push(actualDuration);
       };
 
@@ -392,19 +364,11 @@ describe('Performance Regression Tests', () => {
       const directTimes: number[] = [];
       const wrappedTimes: number[] = [];
 
-      const onRenderDirect: ProfilerOnRenderCallback = (
-        _id,
-        _phase,
-        actualDuration
-      ) => {
+      const onRenderDirect: ProfilerOnRenderCallback = (_id, _phase, actualDuration) => {
         directTimes.push(actualDuration);
       };
 
-      const onRenderWrapped: ProfilerOnRenderCallback = (
-        _id,
-        _phase,
-        actualDuration
-      ) => {
+      const onRenderWrapped: ProfilerOnRenderCallback = (_id, _phase, actualDuration) => {
         wrappedTimes.push(actualDuration);
       };
 

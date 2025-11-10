@@ -31,7 +31,7 @@ export function parseSize(size: PanelSize | undefined): ParsedSize {
     const sizeValue = sizeType === 'object' ? JSON.stringify(size) : String(size);
     throw new Error(
       `Invalid size format: ${sizeValue} (type: ${sizeType}). Expected format: "123px", "45%", "auto", or "*". ` +
-      `If you're seeing "NaNundefined", this may indicate an internal state synchronization issue.`
+        `If you're seeing "NaNundefined", this may indicate an internal state synchronization issue.`
     );
   }
 

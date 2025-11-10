@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type { PanelSize } from '../types';
-import { calculateSizes, convertFromPixels, convertToPixels, formatSize, normalizePanelSize, parseSize } from '../utils';
+import {
+  calculateSizes,
+  convertFromPixels,
+  convertToPixels,
+  formatSize,
+  normalizePanelSize,
+  parseSize,
+} from '../utils';
 
 describe('utils', () => {
   describe('parseSize', () => {
@@ -44,9 +51,7 @@ describe('utils', () => {
     });
 
     it('provides detailed error message for invalid format', () => {
-      expect(() => parseSize('invalid' as PanelSize)).toThrow(
-        /Invalid size format: invalid \(type: string\)/
-      );
+      expect(() => parseSize('invalid' as PanelSize)).toThrow(/Invalid size format: invalid \(type: string\)/);
     });
 
     it('provides helpful error message for NaNundefined case', () => {

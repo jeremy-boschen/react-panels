@@ -1,9 +1,4 @@
-import {
-  Children,
-  isValidElement,
-  type ReactElement,
-  type ReactNode,
-} from 'react';
+import { Children, isValidElement, type ReactElement, type ReactNode } from 'react';
 
 /**
  * Recursively finds all Panel children (excluding ResizeHandles).
@@ -21,7 +16,7 @@ export function findPanelChildren<T = any>(
   const result: ReactElement<T>[] = [];
 
   function traverse(node: ReactNode) {
-    Children.forEach(node, (child) => {
+    Children.forEach(node, child => {
       if (!isValidElement(child)) {
         return;
       }
@@ -60,15 +55,11 @@ export function findPanelChildren<T = any>(
  * @param ResizeHandleType - The ResizeHandle component type
  * @returns Array of Panel and ResizeHandle elements in order
  */
-export function flattenPanelChildren(
-  children: ReactNode,
-  PanelType: any,
-  ResizeHandleType: any
-): ReactElement[] {
+export function flattenPanelChildren(children: ReactNode, PanelType: any, ResizeHandleType: any): ReactElement[] {
   const result: ReactElement[] = [];
 
   function traverse(node: ReactNode) {
-    Children.forEach(node, (child) => {
+    Children.forEach(node, child => {
       if (!isValidElement(child)) {
         return;
       }

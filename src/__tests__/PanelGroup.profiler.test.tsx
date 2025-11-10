@@ -9,11 +9,7 @@ describe('PanelGroup Performance Profiling', () => {
   it('measures render time for direct panels', async () => {
     const renderTimes: number[] = [];
 
-    const onRender: ProfilerOnRenderCallback = (
-      _id,
-      _phase,
-      actualDuration
-    ) => {
+    const onRender: ProfilerOnRenderCallback = (_id, _phase, actualDuration) => {
       renderTimes.push(actualDuration);
     };
 
@@ -45,11 +41,7 @@ describe('PanelGroup Performance Profiling', () => {
   it('measures render time for wrapped panels', async () => {
     const renderTimes: number[] = [];
 
-    const onRender: ProfilerOnRenderCallback = (
-      _id,
-      _phase,
-      actualDuration
-    ) => {
+    const onRender: ProfilerOnRenderCallback = (_id, _phase, actualDuration) => {
       renderTimes.push(actualDuration);
     };
 
@@ -86,19 +78,11 @@ describe('PanelGroup Performance Profiling', () => {
     const directTimes: number[] = [];
     const wrappedTimes: number[] = [];
 
-    const onRenderDirect: ProfilerOnRenderCallback = (
-      _id,
-      _phase,
-      actualDuration
-    ) => {
+    const onRenderDirect: ProfilerOnRenderCallback = (_id, _phase, actualDuration) => {
       directTimes.push(actualDuration);
     };
 
-    const onRenderWrapped: ProfilerOnRenderCallback = (
-      _id,
-      _phase,
-      actualDuration
-    ) => {
+    const onRenderWrapped: ProfilerOnRenderCallback = (_id, _phase, actualDuration) => {
       wrappedTimes.push(actualDuration);
     };
 
@@ -167,11 +151,7 @@ describe('PanelGroup Performance Profiling', () => {
   it('measures re-render performance during resize', async () => {
     const renderTimes: number[] = [];
 
-    const onRender: ProfilerOnRenderCallback = (
-      _id,
-      phase,
-      actualDuration
-    ) => {
+    const onRender: ProfilerOnRenderCallback = (_id, phase, actualDuration) => {
       if (phase === 'update') {
         renderTimes.push(actualDuration);
       }
@@ -221,11 +201,7 @@ describe('PanelGroup Performance Profiling', () => {
   it('measures imperative API setSizes performance', async () => {
     const renderTimes: number[] = [];
 
-    const onRender: ProfilerOnRenderCallback = (
-      _id,
-      phase,
-      actualDuration
-    ) => {
+    const onRender: ProfilerOnRenderCallback = (_id, phase, actualDuration) => {
       if (phase === 'update') {
         renderTimes.push(actualDuration);
       }
@@ -282,11 +258,7 @@ describe('PanelGroup Performance Profiling', () => {
   it('measures performance with many panels (10 panels)', async () => {
     const renderTimes: number[] = [];
 
-    const onRender: ProfilerOnRenderCallback = (
-      _id,
-      _phase,
-      actualDuration
-    ) => {
+    const onRender: ProfilerOnRenderCallback = (_id, _phase, actualDuration) => {
       renderTimes.push(actualDuration);
     };
 
@@ -318,11 +290,7 @@ describe('PanelGroup Performance Profiling', () => {
   it('measures performance with deeply nested wrappers (5 levels)', async () => {
     const renderTimes: number[] = [];
 
-    const onRender: ProfilerOnRenderCallback = (
-      _id,
-      _phase,
-      actualDuration
-    ) => {
+    const onRender: ProfilerOnRenderCallback = (_id, _phase, actualDuration) => {
       renderTimes.push(actualDuration);
     };
 
@@ -364,10 +332,7 @@ describe('PanelGroup Performance Profiling', () => {
   it('measures state update frequency during drag', async () => {
     const updateCounts = { mount: 0, update: 0 };
 
-    const onRender: ProfilerOnRenderCallback = (
-      _id,
-      phase
-    ) => {
+    const onRender: ProfilerOnRenderCallback = (_id, phase) => {
       if (phase === 'mount') {
         updateCounts.mount++;
       } else {
