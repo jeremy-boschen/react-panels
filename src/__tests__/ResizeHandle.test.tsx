@@ -23,18 +23,18 @@ describe('ResizeHandle', () => {
     expect(document.body.style.cursor).toBe(originalCursor);
 
     // Start drag
-    fireEvent.mouseDown(handle, { clientX: 100, clientY: 100 });
+    fireEvent.pointerDown(handle, { clientX: 100, clientY: 100 });
 
     // During drag, body should have col-resize cursor
     expect(document.body.style.cursor).toBe('col-resize');
     expect(document.body.style.userSelect).toBe('none');
 
     // Drag should be called
-    fireEvent.mouseMove(document, { clientX: 150, clientY: 100 });
+    fireEvent.pointerMove(document, { clientX: 150, clientY: 100 });
     expect(onDrag).toHaveBeenCalled();
 
     // End drag
-    fireEvent.mouseUp(document);
+    fireEvent.pointerUp(document);
 
     // After drag, body cursor should be restored
     expect(document.body.style.cursor).toBe(originalCursor);
@@ -54,13 +54,13 @@ describe('ResizeHandle', () => {
     expect(handle).toBeTruthy();
 
     // Start drag
-    fireEvent.mouseDown(handle, { clientX: 100, clientY: 100 });
+    fireEvent.pointerDown(handle, { clientX: 100, clientY: 100 });
 
     // During drag, body should have row-resize cursor
     expect(document.body.style.cursor).toBe('row-resize');
 
     // End drag
-    fireEvent.mouseUp(document);
+    fireEvent.pointerUp(document);
   });
 
   it('restores previous cursor when ending drag', () => {
@@ -79,11 +79,11 @@ describe('ResizeHandle', () => {
     const handle = container.querySelector('[data-resize-handle="true"]') as HTMLElement;
 
     // Start drag
-    fireEvent.mouseDown(handle, { clientX: 100, clientY: 100 });
+    fireEvent.pointerDown(handle, { clientX: 100, clientY: 100 });
     expect(document.body.style.cursor).toBe('col-resize');
 
     // End drag
-    fireEvent.mouseUp(document);
+    fireEvent.pointerUp(document);
 
     // Should restore to 'pointer', not empty string
     expect(document.body.style.cursor).toBe('pointer');
@@ -439,19 +439,19 @@ describe('ResizeHandle', () => {
       const handle = container.querySelector('[data-resize-handle="true"]') as HTMLElement;
 
       // Start drag
-      fireEvent.mouseDown(handle, { clientX: 100 });
-      expect(onDrag).toHaveBeenCalledTimes(0); // Not called on mouseDown
+      fireEvent.pointerDown(handle, { clientX: 100 });
+      expect(onDrag).toHaveBeenCalledTimes(0); // Not called on pointerDown
 
       // Move during drag
-      fireEvent.mouseMove(document, { clientX: 150 });
+      fireEvent.pointerMove(document, { clientX: 150 });
       expect(onDrag).toHaveBeenCalledTimes(1);
 
       // End drag
-      fireEvent.mouseUp(document);
+      fireEvent.pointerUp(document);
 
       // Try to move after drag ended - should be ignored
       onDrag.mockClear();
-      fireEvent.mouseMove(document, { clientX: 200 });
+      fireEvent.pointerMove(document, { clientX: 200 });
       expect(onDrag).not.toHaveBeenCalled();
     });
   });

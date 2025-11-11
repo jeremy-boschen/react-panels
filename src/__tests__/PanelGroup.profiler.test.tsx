@@ -183,9 +183,9 @@ describe('PanelGroup Performance Profiling', () => {
     const handle = container.querySelector('[data-resize-handle="true"]') as HTMLElement;
 
     // Perform resize drag
-    fireEvent.mouseDown(handle, { clientX: 500 });
-    fireEvent.mouseMove(document, { clientX: 600 });
-    fireEvent.mouseUp(document);
+    fireEvent.pointerDown(handle, { clientX: 500 });
+    fireEvent.pointerMove(document, { clientX: 600 });
+    fireEvent.pointerUp(document);
 
     await waitFor(() => {
       expect(renderTimes.length).toBeGreaterThan(0);
@@ -365,10 +365,10 @@ describe('PanelGroup Performance Profiling', () => {
     const handle = container.querySelector('[data-resize-handle="true"]') as HTMLElement;
 
     // Single drag operation
-    fireEvent.mouseDown(handle, { clientX: 500 });
-    fireEvent.mouseMove(document, { clientX: 550 });
-    fireEvent.mouseMove(document, { clientX: 600 });
-    fireEvent.mouseUp(document);
+    fireEvent.pointerDown(handle, { clientX: 500 });
+    fireEvent.pointerMove(document, { clientX: 550 });
+    fireEvent.pointerMove(document, { clientX: 600 });
+    fireEvent.pointerUp(document);
 
     await waitFor(() => {
       const panels = container.querySelectorAll('[data-panel="true"]');

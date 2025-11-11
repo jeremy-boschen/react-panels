@@ -94,9 +94,9 @@ describe('Performance Regression Tests', () => {
       const handle = container.querySelector('[data-resize-handle="true"]') as HTMLElement;
 
       // Single resize operation
-      fireEvent.mouseDown(handle, { clientX: 500 });
-      fireEvent.mouseMove(document, { clientX: 600 });
-      fireEvent.mouseUp(document);
+      fireEvent.pointerDown(handle, { clientX: 500 });
+      fireEvent.pointerMove(document, { clientX: 600 });
+      fireEvent.pointerUp(document);
 
       // Get the slowest update
       const maxUpdateTime = Math.max(...updateTimes);
@@ -132,9 +132,9 @@ describe('Performance Regression Tests', () => {
 
       const handle = container.querySelector('[data-resize-handle="true"]') as HTMLElement;
 
-      fireEvent.mouseDown(handle, { clientX: 100 });
-      fireEvent.mouseMove(document, { clientX: 150 });
-      fireEvent.mouseUp(document);
+      fireEvent.pointerDown(handle, { clientX: 100 });
+      fireEvent.pointerMove(document, { clientX: 150 });
+      fireEvent.pointerUp(document);
 
       const maxUpdateTime = Math.max(...updateTimes);
 

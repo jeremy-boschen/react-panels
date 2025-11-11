@@ -209,7 +209,7 @@ describe('PanelGroup Integration Tests', () => {
       });
 
       const handle = container.querySelector('[data-resize-handle="true"]') as HTMLElement;
-      fireEvent.mouseDown(handle, { clientX: 500, clientY: 300 });
+      fireEvent.pointerDown(handle, { clientX: 500, clientY: 300 });
 
       expect(onResizeStart).toHaveBeenCalledTimes(1);
 
@@ -222,7 +222,7 @@ describe('PanelGroup Integration Tests', () => {
       expect(resizeInfo).toHaveProperty('direction');
 
       // Clean up
-      fireEvent.mouseUp(document);
+      fireEvent.pointerUp(document);
     });
 
     it('calls onResize during drag with ResizeInfo', async () => {
@@ -244,8 +244,8 @@ describe('PanelGroup Integration Tests', () => {
 
       const handle = container.querySelector('[data-resize-handle="true"]') as HTMLElement;
 
-      fireEvent.mouseDown(handle, { clientX: 500, clientY: 300 });
-      fireEvent.mouseMove(document, { clientX: 600, clientY: 300 });
+      fireEvent.pointerDown(handle, { clientX: 500, clientY: 300 });
+      fireEvent.pointerMove(document, { clientX: 600, clientY: 300 });
 
       expect(onResize).toHaveBeenCalled();
 
@@ -267,7 +267,7 @@ describe('PanelGroup Integration Tests', () => {
       expect(resizeInfo.currentSizes[0]).toHaveProperty('size');
 
       // Clean up
-      fireEvent.mouseUp(document);
+      fireEvent.pointerUp(document);
     });
 
     it('calls onResizeEnd when drag ends with ResizeInfo', async () => {
@@ -289,9 +289,9 @@ describe('PanelGroup Integration Tests', () => {
 
       const handle = container.querySelector('[data-resize-handle="true"]') as HTMLElement;
 
-      fireEvent.mouseDown(handle, { clientX: 500, clientY: 300 });
-      fireEvent.mouseMove(document, { clientX: 600, clientY: 300 });
-      fireEvent.mouseUp(document);
+      fireEvent.pointerDown(handle, { clientX: 500, clientY: 300 });
+      fireEvent.pointerMove(document, { clientX: 600, clientY: 300 });
+      fireEvent.pointerUp(document);
 
       expect(onResizeEnd).toHaveBeenCalledTimes(1);
 
@@ -331,8 +331,8 @@ describe('PanelGroup Integration Tests', () => {
 
       const handle = container.querySelector('[data-resize-handle="true"]') as HTMLElement;
 
-      fireEvent.mouseDown(handle, { clientX: 500, clientY: 300 });
-      fireEvent.mouseMove(document, { clientX: 550, clientY: 300 }); // Move 50px right
+      fireEvent.pointerDown(handle, { clientX: 500, clientY: 300 });
+      fireEvent.pointerMove(document, { clientX: 550, clientY: 300 }); // Move 50px right
 
       await waitFor(() => {
         const panel1 = screen.getByTestId('panel-1').parentElement;
@@ -342,7 +342,7 @@ describe('PanelGroup Integration Tests', () => {
         expect(width1 % 100).toBeCloseTo(0, 0);
       });
 
-      fireEvent.mouseUp(document);
+      fireEvent.pointerUp(document);
     });
 
     it('allows onResize to mutate sizes in place', async () => {
@@ -373,8 +373,8 @@ describe('PanelGroup Integration Tests', () => {
 
       const handle = container.querySelector('[data-resize-handle="true"]') as HTMLElement;
 
-      fireEvent.mouseDown(handle, { clientX: 500, clientY: 300 });
-      fireEvent.mouseMove(document, { clientX: 600, clientY: 300 });
+      fireEvent.pointerDown(handle, { clientX: 500, clientY: 300 });
+      fireEvent.pointerMove(document, { clientX: 600, clientY: 300 });
 
       await waitFor(() => {
         const panel1 = screen.getByTestId('panel-1').parentElement;
@@ -384,7 +384,7 @@ describe('PanelGroup Integration Tests', () => {
         expect(width1).toBeCloseTo(300, 0);
       });
 
-      fireEvent.mouseUp(document);
+      fireEvent.pointerUp(document);
     });
   });
 
@@ -455,9 +455,9 @@ describe('PanelGroup Integration Tests', () => {
       const nested1Before = screen.getByTestId('nested-1').parentElement;
       const initialHeight = parseFloat(nested1Before?.style.height || '0');
 
-      fireEvent.mouseDown(innerHandle, { clientX: 250, clientY: 400 });
-      fireEvent.mouseMove(document, { clientX: 250, clientY: 240 }); // Move up to ~30%
-      fireEvent.mouseUp(document);
+      fireEvent.pointerDown(innerHandle, { clientX: 250, clientY: 400 });
+      fireEvent.pointerMove(document, { clientX: 250, clientY: 240 }); // Move up to ~30%
+      fireEvent.pointerUp(document);
 
       await waitFor(() => {
         const nested1 = screen.getByTestId('nested-1').parentElement;
@@ -475,9 +475,9 @@ describe('PanelGroup Integration Tests', () => {
       const ratio1AfterResize = height1AfterResize / totalHeightAfterResize;
 
       // Step 2: Resize the horizontal (outer) panel - this changes the container height for inner panels
-      fireEvent.mouseDown(outerHandle, { clientX: 500, clientY: 400 });
-      fireEvent.mouseMove(document, { clientX: 600, clientY: 400 }); // Expand left panel
-      fireEvent.mouseUp(document);
+      fireEvent.pointerDown(outerHandle, { clientX: 500, clientY: 400 });
+      fireEvent.pointerMove(document, { clientX: 600, clientY: 400 }); // Expand left panel
+      fireEvent.pointerUp(document);
 
       await waitFor(() => {
         const main2 = screen.getByTestId('main-2').parentElement;
@@ -528,8 +528,8 @@ describe('PanelGroup Integration Tests', () => {
       const handle = container.querySelector('[data-resize-handle="true"]') as HTMLElement;
 
       // Try to drag past minimum
-      fireEvent.mouseDown(handle, { clientX: 500, clientY: 300 });
-      fireEvent.mouseMove(document, { clientX: 100, clientY: 300 }); // Try to make it very small
+      fireEvent.pointerDown(handle, { clientX: 500, clientY: 300 });
+      fireEvent.pointerMove(document, { clientX: 100, clientY: 300 }); // Try to make it very small
 
       await waitFor(() => {
         const panel1 = screen.getByTestId('panel-1').parentElement;
@@ -538,7 +538,7 @@ describe('PanelGroup Integration Tests', () => {
         expect(width).toBeGreaterThanOrEqual(200);
       });
 
-      fireEvent.mouseUp(document);
+      fireEvent.pointerUp(document);
     });
 
     it('respects maxSize constraint', async () => {
@@ -563,8 +563,8 @@ describe('PanelGroup Integration Tests', () => {
       const handle = container.querySelector('[data-resize-handle="true"]') as HTMLElement;
 
       // Try to drag past maximum
-      fireEvent.mouseDown(handle, { clientX: 500, clientY: 300 });
-      fireEvent.mouseMove(document, { clientX: 900, clientY: 300 }); // Try to make it very large
+      fireEvent.pointerDown(handle, { clientX: 500, clientY: 300 });
+      fireEvent.pointerMove(document, { clientX: 900, clientY: 300 }); // Try to make it very large
 
       await waitFor(() => {
         const panel1 = screen.getByTestId('panel-1').parentElement;
@@ -573,7 +573,7 @@ describe('PanelGroup Integration Tests', () => {
         expect(width).toBeLessThanOrEqual(700);
       });
 
-      fireEvent.mouseUp(document);
+      fireEvent.pointerUp(document);
     });
   });
 
@@ -678,9 +678,9 @@ describe('PanelGroup Integration Tests', () => {
 
       // Drag right so much that it would push right panel below its minimum
       // Right panel min is 200px, so left can't go above 800px
-      fireEvent.mouseDown(handle, { clientX: 400, clientY: 300 });
-      fireEvent.mouseMove(document, { clientX: 900, clientY: 300 }); // Try to drag to 900px (delta +500)
-      fireEvent.mouseUp(document);
+      fireEvent.pointerDown(handle, { clientX: 400, clientY: 300 });
+      fireEvent.pointerMove(document, { clientX: 900, clientY: 300 }); // Try to drag to 900px (delta +500)
+      fireEvent.pointerUp(document);
 
       await waitFor(() => {
         const panel1 = screen.getByTestId('panel-1').parentElement;
@@ -720,9 +720,9 @@ describe('PanelGroup Integration Tests', () => {
 
       // Drag left so much that it would push right panel above its maximum
       // Right panel max is 700px, so left can't go below 300px
-      fireEvent.mouseDown(handle, { clientX: 600, clientY: 300 });
-      fireEvent.mouseMove(document, { clientX: 100, clientY: 300 }); // Try to drag to 100px (delta -500)
-      fireEvent.mouseUp(document);
+      fireEvent.pointerDown(handle, { clientX: 600, clientY: 300 });
+      fireEvent.pointerMove(document, { clientX: 100, clientY: 300 }); // Try to drag to 100px (delta -500)
+      fireEvent.pointerUp(document);
 
       await waitFor(() => {
         const panel1 = screen.getByTestId('panel-1').parentElement;
@@ -768,9 +768,9 @@ describe('PanelGroup Integration Tests', () => {
       });
 
       const handle = container.querySelector('[data-resize-handle="true"]') as HTMLElement;
-      fireEvent.mouseDown(handle, { clientX: 500, clientY: 300 });
-      fireEvent.mouseMove(document, { clientX: 600, clientY: 300 });
-      fireEvent.mouseUp(document);
+      fireEvent.pointerDown(handle, { clientX: 500, clientY: 300 });
+      fireEvent.pointerMove(document, { clientX: 600, clientY: 300 });
+      fireEvent.pointerUp(document);
 
       await waitFor(() => {
         expect(onResize).toHaveBeenCalled();
@@ -815,9 +815,9 @@ describe('PanelGroup Integration Tests', () => {
       const handle = container.querySelector('[data-resize-handle="true"]') as HTMLElement;
 
       // Drag to approximately 475px (should snap to 500px)
-      fireEvent.mouseDown(handle, { clientX: 500, clientY: 300 });
-      fireEvent.mouseMove(document, { clientX: 475, clientY: 300 });
-      fireEvent.mouseUp(document);
+      fireEvent.pointerDown(handle, { clientX: 500, clientY: 300 });
+      fireEvent.pointerMove(document, { clientX: 475, clientY: 300 });
+      fireEvent.pointerUp(document);
 
       await waitFor(() => {
         const panel1 = screen.getByTestId('panel-1').parentElement;
@@ -865,9 +865,9 @@ describe('PanelGroup Integration Tests', () => {
       const handle = container.querySelector('[data-resize-handle="true"]') as HTMLElement;
 
       // Drag to any position (doesn't matter, will snap on release)
-      fireEvent.mouseDown(handle, { clientX: 600, clientY: 300 });
-      fireEvent.mouseMove(document, { clientX: 800, clientY: 300 });
-      fireEvent.mouseUp(document);
+      fireEvent.pointerDown(handle, { clientX: 600, clientY: 300 });
+      fireEvent.pointerMove(document, { clientX: 800, clientY: 300 });
+      fireEvent.pointerUp(document);
 
       await waitFor(() => {
         expect(onResizeEnd).toHaveBeenCalled();
@@ -912,9 +912,9 @@ describe('PanelGroup Integration Tests', () => {
 
       // Drag left past midpoint (125px) - should collapse to 50px
       // Midpoint = (50px + 200px) / 2 = 125px
-      fireEvent.mouseDown(handle, { clientX: 400, clientY: 300 });
-      fireEvent.mouseMove(document, { clientX: 100, clientY: 300 });
-      fireEvent.mouseUp(document);
+      fireEvent.pointerDown(handle, { clientX: 400, clientY: 300 });
+      fireEvent.pointerMove(document, { clientX: 100, clientY: 300 });
+      fireEvent.pointerUp(document);
 
       await waitFor(() => {
         const panel1 = screen.getByTestId('panel-1').parentElement;
@@ -947,9 +947,9 @@ describe('PanelGroup Integration Tests', () => {
 
       // Drag right past midpoint (125px) - should expand to minSize (200px)
       // Midpoint = (50px + 200px) / 2 = 125px
-      fireEvent.mouseDown(handle, { clientX: 50, clientY: 300 });
-      fireEvent.mouseMove(document, { clientX: 150, clientY: 300 });
-      fireEvent.mouseUp(document);
+      fireEvent.pointerDown(handle, { clientX: 50, clientY: 300 });
+      fireEvent.pointerMove(document, { clientX: 150, clientY: 300 });
+      fireEvent.pointerUp(document);
 
       await waitFor(() => {
         const panel1 = screen.getByTestId('panel-1').parentElement;
@@ -982,9 +982,9 @@ describe('PanelGroup Integration Tests', () => {
       const handle = container.querySelector('[data-resize-handle="true"]') as HTMLElement;
 
       // Collapse the panel by dragging past midpoint (125px)
-      fireEvent.mouseDown(handle, { clientX: 400, clientY: 300 });
-      fireEvent.mouseMove(document, { clientX: 100, clientY: 300 });
-      fireEvent.mouseUp(document);
+      fireEvent.pointerDown(handle, { clientX: 400, clientY: 300 });
+      fireEvent.pointerMove(document, { clientX: 100, clientY: 300 });
+      fireEvent.pointerUp(document);
 
       await waitFor(
         () => {
@@ -995,9 +995,9 @@ describe('PanelGroup Integration Tests', () => {
       );
 
       // Expand the panel by dragging past midpoint (125px) in the other direction
-      fireEvent.mouseDown(handle, { clientX: 50, clientY: 300 });
-      fireEvent.mouseMove(document, { clientX: 150, clientY: 300 });
-      fireEvent.mouseUp(document);
+      fireEvent.pointerDown(handle, { clientX: 50, clientY: 300 });
+      fireEvent.pointerMove(document, { clientX: 150, clientY: 300 });
+      fireEvent.pointerUp(document);
 
       await waitFor(
         () => {
@@ -1032,9 +1032,9 @@ describe('PanelGroup Integration Tests', () => {
       const handle = container.querySelector('[data-resize-handle="true"]') as HTMLElement;
 
       // Drag within normal range (above minSize) - should NOT trigger collapse
-      fireEvent.mouseDown(handle, { clientX: 400, clientY: 300 });
-      fireEvent.mouseMove(document, { clientX: 350, clientY: 300 });
-      fireEvent.mouseUp(document);
+      fireEvent.pointerDown(handle, { clientX: 400, clientY: 300 });
+      fireEvent.pointerMove(document, { clientX: 350, clientY: 300 });
+      fireEvent.pointerUp(document);
 
       await new Promise(resolve => setTimeout(resolve, 50));
 
@@ -1066,9 +1066,9 @@ describe('PanelGroup Integration Tests', () => {
       const handle = container.querySelector('[data-resize-handle="true"]') as HTMLElement;
 
       // Collapse by dragging past midpoint (125px)
-      fireEvent.mouseDown(handle, { clientX: 400, clientY: 300 });
-      fireEvent.mouseMove(document, { clientX: 100, clientY: 300 });
-      fireEvent.mouseUp(document);
+      fireEvent.pointerDown(handle, { clientX: 400, clientY: 300 });
+      fireEvent.pointerMove(document, { clientX: 100, clientY: 300 });
+      fireEvent.pointerUp(document);
 
       await waitFor(() => {
         const panel1 = screen.getByTestId('panel-1').parentElement;
@@ -1168,15 +1168,15 @@ describe('PanelGroup Integration Tests', () => {
       expect(handle).toBeTruthy();
 
       // Start drag
-      fireEvent.mouseDown(handle, { clientX: 500, clientY: 300 });
+      fireEvent.pointerDown(handle, { clientX: 500, clientY: 300 });
       expect(onResizeStart).toHaveBeenCalled();
 
       // Drag
-      fireEvent.mouseMove(document, { clientX: 600, clientY: 300 });
+      fireEvent.pointerMove(document, { clientX: 600, clientY: 300 });
       expect(onResize).toHaveBeenCalled();
 
       // End drag
-      fireEvent.mouseUp(document);
+      fireEvent.pointerUp(document);
       expect(onResizeEnd).toHaveBeenCalled();
     });
 
@@ -1962,9 +1962,9 @@ describe('PanelGroup Integration Tests', () => {
       });
 
       const handle = container.querySelector('[data-resize-handle="true"]') as HTMLElement;
-      fireEvent.mouseDown(handle, { clientX: 400 });
-      fireEvent.mouseMove(document, { clientX: 200 });
-      fireEvent.mouseUp(document);
+      fireEvent.pointerDown(handle, { clientX: 400 });
+      fireEvent.pointerMove(document, { clientX: 200 });
+      fireEvent.pointerUp(document);
 
       await waitFor(() => {
         expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('collapsedSize'));
@@ -2009,9 +2009,9 @@ describe('PanelGroup Integration Tests', () => {
 
       const handle = container.querySelector('[data-resize-handle="true"]') as HTMLElement;
 
-      fireEvent.mouseDown(handle, { clientX: 500 });
-      fireEvent.mouseMove(document, { clientX: 400 });
-      fireEvent.mouseUp(document);
+      fireEvent.pointerDown(handle, { clientX: 500 });
+      fireEvent.pointerMove(document, { clientX: 400 });
+      fireEvent.pointerUp(document);
 
       await waitFor(() => {
         expect(onResize).toHaveBeenCalled();
@@ -2061,9 +2061,9 @@ describe('PanelGroup Integration Tests', () => {
 
       const handle = container.querySelector('[data-resize-handle="true"]') as HTMLElement;
 
-      fireEvent.mouseDown(handle, { clientX: 500 });
-      fireEvent.mouseMove(document, { clientX: 400 });
-      fireEvent.mouseUp(document);
+      fireEvent.pointerDown(handle, { clientX: 500 });
+      fireEvent.pointerMove(document, { clientX: 400 });
+      fireEvent.pointerUp(document);
 
       await waitFor(() => {
         expect(onResize).toHaveBeenCalled();
@@ -2114,9 +2114,9 @@ describe('PanelGroup Integration Tests', () => {
 
       const handle = container.querySelector('[data-resize-handle="true"]') as HTMLElement;
 
-      fireEvent.mouseDown(handle, { clientX: 500 });
-      fireEvent.mouseMove(document, { clientX: 400 });
-      fireEvent.mouseUp(document);
+      fireEvent.pointerDown(handle, { clientX: 500 });
+      fireEvent.pointerMove(document, { clientX: 400 });
+      fireEvent.pointerUp(document);
 
       await waitFor(() => {
         expect(onResize).toHaveBeenCalled();
@@ -2164,9 +2164,9 @@ describe('PanelGroup Integration Tests', () => {
 
       const handle = container.querySelector('[data-resize-handle="true"]') as HTMLElement;
 
-      fireEvent.mouseDown(handle, { clientX: 500 });
-      fireEvent.mouseMove(document, { clientX: 400 });
-      fireEvent.mouseUp(document);
+      fireEvent.pointerDown(handle, { clientX: 500 });
+      fireEvent.pointerMove(document, { clientX: 400 });
+      fireEvent.pointerUp(document);
 
       await waitFor(() => {
         expect(onResizeEnd).toHaveBeenCalled();
@@ -2426,9 +2426,9 @@ describe('PanelGroup Integration Tests', () => {
       expect(handle).toBeTruthy();
 
       // Drag handle 100px to the right
-      fireEvent.mouseDown(handle, { clientX: 500 });
-      fireEvent.mouseMove(document, { clientX: 600 });
-      fireEvent.mouseUp(document);
+      fireEvent.pointerDown(handle, { clientX: 500 });
+      fireEvent.pointerMove(document, { clientX: 600 });
+      fireEvent.pointerUp(document);
 
       await waitFor(() => {
         const panel1 = screen.getByTestId('panel-1').parentElement;
@@ -2834,9 +2834,9 @@ describe('PanelGroup Integration Tests', () => {
       const moveY = 250;
 
       // Should not throw any errors during resize
-      fireEvent.mouseDown(handle, { clientY: startY, button: 0 });
-      fireEvent.mouseMove(document, { clientY: moveY, button: 0 });
-      fireEvent.mouseUp(document, { button: 0 });
+      fireEvent.pointerDown(handle, { clientY: startY, button: 0 });
+      fireEvent.pointerMove(document, { clientY: moveY, button: 0 });
+      fireEvent.pointerUp(document, { button: 0 });
 
       // Verify panels still have valid sizes
       await waitFor(() => {
