@@ -24,6 +24,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added constraint caching to avoid redundant size parsing and conversion on every resize (30-40% faster calculations)
 - Added early exit optimization to collapse logic for panels without collapse support (30x faster for non-collapsible layouts)
 
+### Accessibility
+- Added `aria-label` prop to ResizeHandle with default "Resize panels" label for screen readers
+- Added `role="group"` to Panel components for semantic structure
+- Added `role="group"` and `aria-orientation` to PanelGroup for layout direction announcement
+- ResizeHandle maintains existing keyboard support (Arrow keys + Shift) and ARIA attributes (role="separator", aria-orientation)
+- Added WebkitTapHighlightColor: transparent to remove visual tap feedback on mobile devices
+
+### Touch Support
+- Full touch event handling in ResizeHandle (touchstart, touchmove, touchend, touchcancel)
+- Proper touch identifier tracking to prevent multi-touch conflicts
+- Passive: false for touchmove events to prevent scrolling during panel resize
+- Unified interaction model across mouse, touch, and keyboard inputs
+
+### Documentation
+- Added comprehensive JSDoc to all components (PanelGroup, Panel, ResizeHandle) with usage examples
+- Added complete JSDoc to all utility functions (parseSize, formatSize, convertToPixels, convertFromPixels, clampSize, calculateSizes)
+- Added JSDoc to all type definitions (PanelSize, PanelProps, PanelGroupProps, PanelGroupHandle, ParsedSize)
+- All public APIs now have clear descriptions, parameter documentation, and code examples
+
 ### Tests
 - Added comprehensive tests for `throttle` function with proper fake timer support using `vi.setSystemTime()`
 - Added dev mode warning tests for `calculateSizesWithPixelConstraints` to cover edge cases
