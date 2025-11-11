@@ -7,6 +7,7 @@ import BasicVerticalDemo from './examples/BasicVerticalDemo';
 import CollapsiblePanelDemo from './examples/CollapsiblePanelDemo';
 import ComplexLayoutDemo from './examples/ComplexLayoutDemo';
 import ControlledCollapseDemo from './examples/ControlledCollapseDemo';
+import DynamicPanelsDemo from './examples/DynamicPanelsDemo';
 import ImperativeAPIDemo from './examples/ImperativeAPIDemo';
 import NestedPanelsDemo from './examples/NestedPanelsDemo';
 import ResizeCallbacksDemo from './examples/ResizeCallbacksDemo';
@@ -21,7 +22,8 @@ type DemoType =
   | 'callbacks'
   | 'collapsible'
   | 'controlled-collapse'
-  | 'seamless';
+  | 'seamless'
+  | 'dynamic';
 
 interface DemoConfig {
   id: DemoType;
@@ -94,6 +96,13 @@ const demos: DemoConfig[] = [
     description: 'Customize resize handles with sizes, styles, and seamless layouts',
     component: SeamlessPanelsDemo,
     codeKey: 'SeamlessPanelsDemo',
+  },
+  {
+    id: 'dynamic',
+    title: 'Dynamic Panels',
+    description: 'Add and remove panels dynamically in both horizontal and vertical layouts',
+    component: DynamicPanelsDemo,
+    codeKey: 'DynamicPanelsDemo',
   },
 ];
 
