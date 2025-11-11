@@ -422,9 +422,29 @@ describe('ResizeHandle', () => {
   });
 
   describe('Touch Support', () => {
-    // Helper to create Touch object
+    // Helper to create Touch-like object that works across all browsers
+    // Firefox doesn't have Touch constructor, WebKit doesn't allow calling it
     const createTouch = (id: number, x: number, y: number) => {
-      return new Touch({
+      // Try to use native Touch constructor if available (Chromium)
+      if (typeof Touch !== 'undefined') {
+        try {
+          return new Touch({
+            identifier: id,
+            target: document.body,
+            clientX: x,
+            clientY: y,
+            screenX: x,
+            screenY: y,
+            pageX: x,
+            pageY: y,
+          });
+        } catch (e) {
+          // WebKit throws "Illegal constructor" - fall through to mock
+        }
+      }
+
+      // Fallback: create a mock Touch object for Firefox/WebKit
+      return {
         identifier: id,
         target: document.body,
         clientX: x,
@@ -433,7 +453,11 @@ describe('ResizeHandle', () => {
         screenY: y,
         pageX: x,
         pageY: y,
-      });
+        radiusX: 0,
+        radiusY: 0,
+        rotationAngle: 0,
+        force: 1,
+      } as Touch;
     };
 
     it('handles touch start and touch move for horizontal layout', () => {
