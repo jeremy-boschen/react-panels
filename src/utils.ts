@@ -61,20 +61,42 @@ export function parseSize(size: PanelSize | undefined): ParsedSize {
     return { value: 0, unit: 'auto', original: size };
   }
 
-  const match = size.match(/^(\d+(?:\.\d+)?)(px|%)$/);
-  if (!match) {
-    const sizeType = typeof size;
-    const sizeValue = sizeType === 'object' ? JSON.stringify(size) : String(size);
-    throw new Error(
-      `Invalid size format: ${sizeValue} (type: ${sizeType}). Expected format: "123px", "45%", "auto", or "*". ` +
-        `If you're seeing "NaNundefined", this may indicate an internal state synchronization issue.`
-    );
+  // Try to match with unit (px or %)
+  let match = size.match(/^(\d+(?:\.\d+)?)(px|%)$/);
+  if (match) {
+    const value = parseFloat(match[1]);
+    const unit = match[2] as 'px' | '%';
+    return { value, unit, original: size };
   }
 
-  const value = parseFloat(match[1]);
-  const unit = match[2] as 'px' | '%';
+  // Try to match plain number (without unit) - default to px for better DX
+  match = size.match(/^(\d+(?:\.\d+)?)$/);
+  if (match) {
+    const value = parseFloat(match[1]);
+    // Auto-convert plain numbers to pixels for better developer experience
+    if (typeof process !== 'undefined' && (process.env?.NODE_ENV === 'development' || process.env?.NODE_ENV === 'dev')) {
+      console.warn(
+        `[react-adjustable-panels] Size value "${size}" is missing a unit. Automatically treating it as "${size}px". ` +
+          `Please use explicit units: "123px", "45%", "auto", or "*" to avoid this warning.`
+      );
+    }
+    return { value, unit: 'px', original: `${value}px` as PanelSize };
+  }
 
-  return { value, unit, original: size };
+  // Invalid format - throw helpful error
+  const sizeType = typeof size;
+  const sizeValue = sizeType === 'object' ? JSON.stringify(size) : String(size);
+  throw new Error(
+    `[react-adjustable-panels] Invalid size format: "${sizeValue}" (type: ${sizeType}).\n` +
+      `Expected formats:\n` +
+      `  - Pixels: "123px" or "123"\n` +
+      `  - Percentage: "45%"\n` +
+      `  - Auto: "auto" or "*"\n` +
+      `\n` +
+      `Hint: If you used minSize="1", change it to minSize="1px" (or just leave off the quotes in JSX for TypeScript checking).\n` +
+      `\n` +
+      `If you're seeing "NaNundefined", this may indicate an internal state synchronization issue.`
+  );
 }
 
 export function formatSize(value: number, unit: 'px' | '%' | 'auto'): PanelSize {

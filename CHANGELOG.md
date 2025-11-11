@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Increased resize handle z-index from 10 to 50 for better layering control
+- Improved `parseSize` to auto-convert plain numbers (e.g., "1", "100") to pixels with a dev-mode warning for better developer experience
+- Enhanced error messages for invalid size formats with helpful hints and examples
 
 ### Performance
 - Optimized ResizeObserver callback with throttling (~60fps) to reduce unnecessary calculations during window resize

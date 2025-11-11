@@ -119,7 +119,7 @@ export default function DynamicPanelsDemo() {
         <div className="control-group">
           <div style={{ fontSize: '0.85em', color: '#8b949e', marginTop: '0.5rem' }}>
             💡 <strong>Tip:</strong> Add or remove panels dynamically in nested layouts. Horizontal panels contain
-            vertical nested panels. Each panel uses <code>minSize="1px"</code> and <code>defaultSize="auto"</code>. Try
+            vertical nested panels. Each panel uses <code>minSize="1"</code> and <code>defaultSize="auto"</code>. Try
             adding 5+ panels!
           </div>
         </div>
@@ -128,7 +128,7 @@ export default function DynamicPanelsDemo() {
       {/* @demo-code-start */}
       <PanelGroup direction="horizontal" key={`h-${horizontalPanels.map(p => p.id).join('-')}`}>
         {horizontalPanels.map((panel, index) => (
-          <Panel key={panel.id} defaultSize={panel.defaultSize} minSize="1px" className={panel.color}>
+          <Panel key={panel.id} defaultSize={panel.defaultSize} minSize="1" className={panel.color}>
             <div className="panel-content">
               <div className="panel-header">Horizontal Panel {index + 1}</div>
               <div className="panel-body">
@@ -151,11 +151,11 @@ export default function DynamicPanelsDemo() {
             </div>
           </Panel>
         ))}
-        <Panel defaultSize="auto" minSize="1px">
+        <Panel defaultSize="auto" minSize="1">
           {/* Nested Vertical Layout */}
           <PanelGroup direction="vertical" key={`v-${verticalPanels.map(p => p.id).join('-')}`}>
             {verticalPanels.map((panel, index) => (
-              <Panel key={panel.id} defaultSize={panel.defaultSize} minSize="1px" className={panel.color}>
+              <Panel key={panel.id} defaultSize={panel.defaultSize} minSize="1" className={panel.color}>
                 <div className="panel-content">
                   <div className="panel-header">Vertical Panel {index + 1} (Nested)</div>
                   <div className="panel-body">
