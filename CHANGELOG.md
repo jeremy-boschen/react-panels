@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New `calculateSizesWithPixelConstraints` function for optimized size calculations with cached constraints
 - Explicit id attribute support for Panel and ResizeHandle components with TypeScript definitions
 - ARIA attributes (aria-label, aria-labelledby, aria-controls) for improved accessibility
+- Mobile and tablet responsive styles for demo site with proper viewport handling for iOS/iPadOS
 
 ### Changed
 - Increased resize handle z-index from 10 to 50 for better layering control
@@ -35,10 +36,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ResizeHandle maintains existing keyboard support (Arrow keys + Shift) and ARIA attributes (role="separator", aria-orientation)
 
 ### Touch Device Support
-- Touch devices work automatically via browser's native touch-to-mouse event translation
-- No explicit touch event handling needed (following industry standard approach used by react-resizable-panels, dockview, etc.)
+- Added `touchAction: "none"` CSS property to ResizeHandle to prevent default touch behaviors (scrolling, zooming) during resize
+- Touch devices work via browser's native touch-to-mouse event translation (following industry standard approach)
+- Works reliably on all modern mobile browsers and tablets (iOS Safari, iPadOS, Chrome Mobile, Firefox Mobile, etc.)
 - Simpler implementation with better cross-browser compatibility and testability
-- Works on all modern mobile browsers (iOS Safari, Chrome Mobile, Firefox Mobile, etc.)
 
 ### Documentation
 - Added comprehensive JSDoc to all components (PanelGroup, Panel, ResizeHandle) with usage examples

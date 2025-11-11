@@ -4,6 +4,15 @@
   box-sizing: border-box;
 }
 
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  /* Fix for iOS Safari address bar */
+  position: fixed;
+}
+
 body {
   font-family:
     -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
@@ -22,10 +31,16 @@ code {
   font-size: 0.9em;
 }
 
+#root {
+  width: 100%;
+  height: 100%;
+}
+
 .app {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
 }
 

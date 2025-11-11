@@ -197,6 +197,7 @@ export function ResizeHandle(rawProps: ResizeHandleProps) {
       style={{
         cursor,
         userSelect: 'none',
+        touchAction: 'none', // Prevent default touch behaviors (scrolling, zooming) during resize
         ...(direction === 'horizontal'
           ? { width: `${size}px`, height: '100%' }
           : { width: '100%', height: `${size}px` }),
