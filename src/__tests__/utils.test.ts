@@ -46,12 +46,28 @@ describe('utils', () => {
       expect(result.original).toBe('auto');
     });
 
+    it('parses plain numbers as pixels (auto-conversion)', () => {
+      const result = parseSize('100' as PanelSize);
+      expect(result.value).toBe(100);
+      expect(result.unit).toBe('px');
+      expect(result.original).toBe('100px');
+    });
+
+    it('parses decimal plain numbers as pixels (auto-conversion)', () => {
+      const result = parseSize('50.5' as PanelSize);
+      expect(result.value).toBe(50.5);
+      expect(result.unit).toBe('px');
+      expect(result.original).toBe('50.5px');
+    });
+
     it('throws on invalid format', () => {
       expect(() => parseSize('invalid' as PanelSize)).toThrow();
     });
 
     it('provides detailed error message for invalid format', () => {
-      expect(() => parseSize('invalid' as PanelSize)).toThrow(/Invalid size format: invalid \(type: string\)/);
+      expect(() => parseSize('invalid' as PanelSize)).toThrow(
+        /\[react-adjustable-panels\] Invalid size format: "invalid" \(type: string\)/
+      );
     });
 
     it('provides helpful error message for NaNundefined case', () => {
