@@ -4,6 +4,42 @@ import type { PanelSize, ParsedSize } from './types';
 declare const process: { env?: { NODE_ENV?: string } } | undefined;
 
 /**
+ * Throttles a function to execute at most once per specified wait time.
+ * Uses leading edge execution (fires immediately, then throttles subsequent calls).
+ *
+ * @param func - The function to throttle
+ * @param wait - Minimum time in milliseconds between function executions
+ * @returns Throttled function
+ */
+export function throttle<T extends (...args: any[]) => any>(
+  func: T,
+  wait: number
+): (...args: Parameters<T>) => void {
+  let timeout: ReturnType<typeof setTimeout> | null = null;
+  let previous = 0;
+
+  return function executedFunction(...args: Parameters<T>) {
+    const now = Date.now();
+    const remaining = wait - (now - previous);
+
+    if (remaining <= 0 || remaining > wait) {
+      if (timeout) {
+        clearTimeout(timeout);
+        timeout = null;
+      }
+      previous = now;
+      func(...args);
+    } else if (!timeout) {
+      timeout = setTimeout(() => {
+        previous = Date.now();
+        timeout = null;
+        func(...args);
+      }, remaining);
+    }
+  };
+}
+
+/**
  * Normalizes a potentially undefined PanelSize to a valid PanelSize.
  * This should be used at component boundaries to sanitize user input.
  *
@@ -159,6 +195,112 @@ export function calculateSizes(
       const constraints = panelConstraints[lastAutoIndex];
       const minPx = constraints?.minSize ? convertToPixels(parseSize(constraints.minSize), containerSize) : undefined;
       const maxPx = constraints?.maxSize ? convertToPixels(parseSize(constraints.maxSize), containerSize) : undefined;
+      pixelSizes[lastAutoIndex] = clampSize(pixelSizes[lastAutoIndex], minPx, maxPx);
+    }
+  }
+
+  // Dev mode warnings
+  if (typeof process !== 'undefined' && (process.env?.NODE_ENV === 'development' || process.env?.NODE_ENV === 'dev')) {
+    const total = pixelSizes.reduce((sum, size) => sum + size, 0);
+
+    if (autoCount === 0 && Math.abs(total - containerSize) > 1) {
+      console.warn(
+        `[react-adjustable-panels] Panel sizes sum to ${total.toFixed(1)}px but container is ${containerSize.toFixed(1)}px (diff: ${(total - containerSize).toFixed(1)}px). ` +
+          `Consider using size="auto" on at least one panel to fill remaining space automatically.`
+      );
+    }
+
+    if (autoCount > 0 && remainingSpace < 0) {
+      console.warn(
+        `[react-adjustable-panels] Fixed panel sizes sum to ${fixedTotal.toFixed(1)}px but container is only ${containerSize.toFixed(1)}px. ` +
+          `Auto panels have ${remainingSpace.toFixed(1)}px of space (negative). Consider reducing fixed panel sizes.`
+      );
+    }
+  }
+
+  return pixelSizes;
+}
+
+/**
+ * Calculates panel sizes in pixels with pre-computed pixel constraints.
+ * This is an optimized version of calculateSizes that accepts pixel constraints
+ * directly, avoiding redundant parsing and conversion on each call.
+ *
+ * @param requestedSizes - Array of panel sizes (can include undefined)
+ * @param containerSize - Container dimension in pixels
+ * @param pixelConstraints - Pre-computed constraints with minPx/maxPx in pixels
+ * @returns Array of panel sizes in pixels
+ */
+export function calculateSizesWithPixelConstraints(
+  requestedSizes: (PanelSize | undefined)[],
+  containerSize: number,
+  pixelConstraints: Array<{ minPx?: number; maxPx?: number }>
+): number[] {
+  // Parse all sizes
+  const parsed = requestedSizes.map(parseSize);
+
+  // Identify auto and fixed panels
+  const autoIndices: number[] = [];
+  const fixedIndices: number[] = [];
+
+  parsed.forEach((p, i) => {
+    if (p.unit === 'auto') {
+      autoIndices.push(i);
+    } else {
+      fixedIndices.push(i);
+    }
+  });
+
+  // Initialize pixel sizes array
+  const pixelSizes: number[] = new Array(parsed.length).fill(0);
+
+  // Calculate fixed panel sizes with constraints (using pre-computed pixel constraints)
+  let fixedTotal = 0;
+  fixedIndices.forEach(i => {
+    const constraints = pixelConstraints[i];
+    const minPx = constraints?.minPx;
+    const maxPx = constraints?.maxPx;
+
+    let size = convertToPixels(parsed[i], containerSize);
+    size = clampSize(size, minPx, maxPx);
+
+    pixelSizes[i] = size;
+    fixedTotal += size;
+  });
+
+  // Calculate remaining space for auto panels
+  const remainingSpace = containerSize - fixedTotal;
+  const autoCount = autoIndices.length;
+
+  if (autoCount > 0) {
+    // Distribute remaining space equally among auto panels
+    const baseAutoSize = remainingSpace / autoCount;
+
+    autoIndices.forEach(i => {
+      const constraints = pixelConstraints[i];
+      const minPx = constraints?.minPx;
+      const maxPx = constraints?.maxPx;
+
+      let size = baseAutoSize;
+      size = clampSize(size, minPx, maxPx);
+
+      pixelSizes[i] = size;
+    });
+
+    // Adjust for any constraint violations
+    // If an auto panel was clamped, redistribute the difference
+    const autoTotal = autoIndices.reduce((sum, i) => sum + pixelSizes[i], 0);
+    const autoDiff = remainingSpace - autoTotal;
+
+    if (Math.abs(autoDiff) > 0.1 && autoCount > 0) {
+      // Add the difference to the last auto panel
+      const lastAutoIndex = autoIndices[autoIndices.length - 1];
+      pixelSizes[lastAutoIndex] += autoDiff;
+
+      // Re-apply constraints to last auto panel
+      const constraints = pixelConstraints[lastAutoIndex];
+      const minPx = constraints?.minPx;
+      const maxPx = constraints?.maxPx;
       pixelSizes[lastAutoIndex] = clampSize(pixelSizes[lastAutoIndex], minPx, maxPx);
     }
   }

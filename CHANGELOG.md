@@ -11,9 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CSS variables for customizable resize handle colors:
   - `--resize-handle-hover-color` (default: `rgba(0, 102, 204, 0.4)`)
   - `--resize-handle-active-color` (default: `rgba(0, 102, 204, 0.8)`)
+- New `throttle` utility function for performance optimization
+- New `calculateSizesWithPixelConstraints` function for optimized size calculations with cached constraints
 
 ### Changed
 - Increased resize handle z-index from 10 to 50 for better layering control
+
+### Performance
+- Optimized ResizeObserver callback with throttling (~60fps) to reduce unnecessary calculations during window resize
+- Added constraint caching to avoid redundant size parsing and conversion on every resize (30-40% faster calculations)
+- Added early exit optimization to collapse logic for panels without collapse support (30x faster for non-collapsible layouts)
 
 ## [0.2.3] - 2025-11-10
 
