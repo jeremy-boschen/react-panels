@@ -31,7 +31,7 @@
     "test": "vitest run --exclude '**/*.profiler.test.{ts,tsx}' --exclude '**/performance-regression.test.{ts,tsx}'",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage --coverage.provider v8 --browser chromium --exclude '**/*.profiler.test.{ts,tsx}' --exclude '**/performance-regression.test.{ts,tsx}'",
-    "test:perf": "vitest run --browser.enabled=false --environment jsdom src/__tests__/PanelGroup.profiler.test.tsx src/__tests__/performance-regression.test.tsx",
+    "test:perf": "vitest run --browser.name=chromium src/__tests__/PanelGroup.profiler.test.tsx src/__tests__/performance-regression.test.tsx",
     "bench": "vitest bench src/__tests__/performance.bench.tsx",
     "bundle:check": "node scripts/check-bundle-size.cjs",
     "bundle:analyze": "yarn build && yarn bundle:check",
