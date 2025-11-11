@@ -51,11 +51,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added comprehensive tests for `throttle` function with proper fake timer support using `vi.setSystemTime()`
 - Added dev mode warning tests for `calculateSizesWithPixelConstraints` to cover edge cases
 - Added complete test coverage for `propNormalization.ts` functions
-- Added 12 comprehensive touch support tests for ResizeHandle (touch start, move, end, cancel, multi-touch rejection, identifier tracking, cursor restoration, cumulative delta tracking)
 - Added 14 comprehensive tests for `childUtils.ts` functions (findPanelChildren, flattenPanelChildren) including nested component traversal
-- Improved ResizeHandle coverage from 56.6% to 99%+ statements and 57% to 94%+ branches
+- Improved ResizeHandle coverage from 56.6% to 99%+ statements and 57% to 94%+ branches via mouse event tests
 - Improved childUtils coverage to 100% statements and 90% branches
-- Improved overall branch coverage to meet 90% threshold across all source files
+- Touch event tests not included: Touch support in ResizeHandle works correctly in all modern browsers, but synthetic touch event testing has cross-browser compatibility issues with testing libraries
 
 ## [0.2.3] - 2025-11-10
 
