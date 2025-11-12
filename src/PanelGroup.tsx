@@ -163,14 +163,14 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
       collapsedStateRef.current = newCollapsedStates;
 
       // Fire initial collapse callbacks for panels that start collapsed
-      setTimeout(() => {
+      queueMicrotask(() => {
         newCollapsedStates.forEach((collapsed, index) => {
           if (collapsed) {
             const callback = newCollapseCallbacks[index];
             callback?.(true);
           }
         });
-      }, 0);
+      });
     }
 
     // Always update originalUnits to handle dynamically added/removed panels
@@ -202,7 +202,8 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
       // 1. No cache exists
       // 2. Container size changes significantly (>1px)
       // 3. Constraint definitions change (detected via hash)
-      const constraintHash = JSON.stringify(constraintsRef.current);
+      // Hash only the values that matter for more efficient comparison
+      const constraintHash = constraintsRef.current.map(c => `${c.minSize}:${c.maxSize}`).join('|');
       const needsConstraintUpdate =
         !constraintCacheRef.current ||
         Math.abs(constraintCacheRef.current.containerSize - containerSize) > 1 ||
@@ -290,10 +291,10 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
       collapsedStateRef.current[panelIndex] = true;
 
       // Fire callback
-      setTimeout(() => {
+      queueMicrotask(() => {
         const callback = collapseCallbacksRef.current[panelIndex];
         callback?.(true);
-      }, 0);
+      });
 
       // Force size update
       const rect = containerRef.current.getBoundingClientRect();
@@ -335,10 +336,10 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
       collapsedStateRef.current[panelIndex] = false;
 
       // Fire callback
-      setTimeout(() => {
+      queueMicrotask(() => {
         const callback = collapseCallbacksRef.current[panelIndex];
         callback?.(false);
-      }, 0);
+      });
 
       // Force size update
       const rect = containerRef.current.getBoundingClientRect();
@@ -415,12 +416,12 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
 
           // Fire onCollapse callbacks for state changes
           if (collapsedTransitions.length > 0) {
-            setTimeout(() => {
+            queueMicrotask(() => {
               collapsedTransitions.forEach(({ index, collapsed }) => {
                 const callback = collapseCallbacksRef.current[index];
                 callback?.(collapsed);
               });
-            }, 0);
+            });
           }
         }
 
@@ -549,12 +550,12 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
       }
 
       if (collapsedTransitions.length > 0) {
-        setTimeout(() => {
+        queueMicrotask(() => {
           collapsedTransitions.forEach(({ index, collapsed }) => {
             const callback = collapseCallbacksRef.current[index];
             callback?.(collapsed);
           });
-        }, 0);
+        });
       }
 
       return finalSizes;
@@ -656,24 +657,14 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
           direction,
         };
 
-        // Save original current sizes to detect mutation
-        const originalCurrentPixels = [...currentPixelSizesRef.current];
-
-        // Call callback - it can return new sizes or mutate currentSizes
+        // Call callback - it can return new sizes if it wants to override
         const customSizes = onResize(resizeInfo);
 
-        // Check if callback returned custom sizes
+        // Use returned sizes if provided, otherwise use proposed sizes
         if (customSizes) {
           finalPixelSizes = applySizeInfo(customSizes, containerSize);
-        } else {
-          // Check if callback mutated the currentSizes array
-          const mutatedPixels = applySizeInfo(resizeInfo.currentSizes, containerSize);
-          const wasMutated = mutatedPixels.some((px, i) => Math.abs(px - originalCurrentPixels[i]) > 0.01);
-          if (wasMutated) {
-            finalPixelSizes = mutatedPixels;
-          }
-          // Otherwise keep finalPixelSizes as proposedPixelSizes
         }
+        // If no return value, keep finalPixelSizes as proposedPixelSizes
       }
 
       // Update ref immediately for next drag event
@@ -742,23 +733,14 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
         direction,
       };
 
-      // Save original to detect mutation
-      const originalFinalPixels = [...finalPixelSizes];
-
-      // Call callback - it can return new sizes or mutate currentSizes
+      // Call callback - it can return new sizes if it wants to override
       const customSizes = onResizeEnd(resizeInfo);
 
-      // Check if callback returned custom sizes
+      // Use returned sizes if provided, otherwise keep current sizes
       if (customSizes) {
         finalPixelSizes = applySizeInfo(customSizes, containerSize);
-      } else {
-        // Check if callback mutated the currentSizes array
-        const mutatedPixels = applySizeInfo(resizeInfo.currentSizes, containerSize);
-        const wasMutated = mutatedPixels.some((px, i) => Math.abs(px - originalFinalPixels[i]) > 0.01);
-        if (wasMutated) {
-          finalPixelSizes = mutatedPixels;
-        }
       }
+      // If no return value, keep finalPixelSizes as is
     }
 
     // Update refs and state with final sizes

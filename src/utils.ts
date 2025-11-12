@@ -163,6 +163,18 @@ export function convertToPixels(size: ParsedSize, containerSize: number): number
   if (size.unit === 'px') {
     return size.value;
   }
+
+  // Guard against zero/invalid container size
+  if (containerSize <= 0) {
+    if (typeof console !== 'undefined') {
+      console.warn(
+        `[react-adjustable-panels] Container size is ${containerSize}. ` +
+          `Percentage sizes cannot be calculated. Defaulting to 0.`
+      );
+    }
+    return 0;
+  }
+
   return (size.value / 100) * containerSize;
 }
 

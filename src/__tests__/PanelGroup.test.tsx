@@ -345,12 +345,13 @@ describe('PanelGroup Integration Tests', () => {
       fireEvent.pointerUp(document);
     });
 
-    it('allows onResize to mutate sizes in place', async () => {
+    it('allows onResize to override sizes via return value', async () => {
       const onResize = vi.fn((info: ResizeInfo): PanelSizeInfo[] | undefined => {
-        // Mutate first panel to be exactly 300px
-        info.currentSizes[0].pixels = 300;
-        // Don't return anything - mutation should be detected
-        return undefined;
+        // Return new sizes with first panel set to exactly 300px
+        return [
+          { size: '300px', pixels: 300, percent: 30 },
+          { size: '700px', pixels: 700, percent: 70 },
+        ];
       });
 
       const { container } = render(
@@ -380,7 +381,7 @@ describe('PanelGroup Integration Tests', () => {
         const panel1 = screen.getByTestId('panel-1').parentElement;
         const width1 = parseFloat(panel1?.style.width || '0');
 
-        // Should be forced to 300px by mutation
+        // Should be forced to 300px by return value
         expect(width1).toBeCloseTo(300, 0);
       });
 
@@ -2028,13 +2029,13 @@ describe('PanelGroup Integration Tests', () => {
       });
     });
 
-    it('detects when callback mutates currentSizes array', async () => {
+    it('uses return value to override proposed sizes', async () => {
       const onResize = vi.fn((info: ResizeInfo): PanelSizeInfo[] | undefined => {
-        // Mutate currentSizes to force panel 1 to 300px
-        info.currentSizes[0].pixels = 300;
-        info.currentSizes[1].pixels = 700;
-        // Return undefined to signal mutation
-        return undefined;
+        // Return new sizes to override proposed sizes
+        return [
+          { size: '300px', pixels: 300, percent: 30 },
+          { size: '700px', pixels: 700, percent: 70 },
+        ];
       });
 
       const { container } = render(
@@ -2074,7 +2075,7 @@ describe('PanelGroup Integration Tests', () => {
         const width1 = parseFloat(panel1?.style.width || '0');
         const width2 = parseFloat(panel2?.style.width || '0');
 
-        // Should detect mutation and use mutated values (300px and 700px)
+        // Should use returned values (300px and 700px)
         expect(width1).toBeCloseTo(300, 0);
         expect(width2).toBeCloseTo(700, 0);
       });
@@ -2133,13 +2134,13 @@ describe('PanelGroup Integration Tests', () => {
       });
     });
 
-    it('onResizeEnd detects when callback mutates currentSizes array', async () => {
+    it('onResizeEnd uses return value to override final sizes', async () => {
       const onResizeEnd = vi.fn((info: ResizeInfo): PanelSizeInfo[] | undefined => {
-        // Mutate currentSizes to force panel 1 to 350px
-        info.currentSizes[0].pixels = 350;
-        info.currentSizes[1].pixels = 650;
-        // Return undefined to signal mutation
-        return undefined;
+        // Return new sizes to override final sizes
+        return [
+          { size: '350px', pixels: 350, percent: 35 },
+          { size: '650px', pixels: 650, percent: 65 },
+        ];
       });
 
       const { container } = render(
@@ -2177,7 +2178,7 @@ describe('PanelGroup Integration Tests', () => {
         const width1 = parseFloat(panel1?.style.width || '0');
         const width2 = parseFloat(panel2?.style.width || '0');
 
-        // Should detect mutation and use mutated values (350px and 650px)
+        // Should use returned values (350px and 650px)
         expect(width1).toBeCloseTo(350, 0);
         expect(width2).toBeCloseTo(650, 0);
       });

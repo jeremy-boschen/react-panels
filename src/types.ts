@@ -20,19 +20,24 @@ export type Direction = 'horizontal' | 'vertical';
  * Detailed information about a panel's size in multiple formats
  */
 export interface PanelSizeInfo {
-  /** Original size format as set by user (e.g., "50%", "200px", or "auto") - mutable */
+  /** Original size format as set by user (e.g., "50%", "200px", or "auto") */
   size: PanelSize;
-  /** Actual rendered size in pixels - mutable */
+  /** Actual rendered size in pixels */
   pixels: number;
-  /** Size as percentage of container (0-100) - mutable */
+  /** Size as percentage of container (0-100) */
   percent: number;
 }
 
 /**
- * Complete information passed to resize callbacks
+ * Complete information passed to resize callbacks.
+ *
+ * To customize resize behavior, return a new array of PanelSizeInfo from your callback.
+ * If you return nothing (void), the proposed sizes will be used.
+ *
+ * Note: Mutating the arrays is not supported. Always return a new array if you want to override.
  */
 export interface ResizeInfo {
-  /** Current panel sizes (after any previous transformations/snapping) - mutable */
+  /** Current panel sizes (after any previous transformations/snapping) */
   currentSizes: PanelSizeInfo[];
   /** Proposed panel sizes (before callback transformation, based on raw mouse position) */
   proposedSizes: PanelSizeInfo[];
