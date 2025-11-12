@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2025-11-11
+
 ### Added
 - CSS variables for customizable resize handles (prefixed with `--rap-` to avoid collisions):
   - `--rap-handle-hover-color` (default: `rgba(0, 102, 204, 0.4)`)
