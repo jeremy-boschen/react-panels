@@ -84,18 +84,41 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
   const containerRef = useRef<HTMLDivElement>(null);
   const [panelSizes, setPanelSizes] = useState<PanelSize[]>([]);
   const [pixelSizes, setPixelSizes] = useState<number[]>([]);
-  const currentPixelSizesRef = useRef<number[]>([]);
-  const dragStartPixelSizesRef = useRef<number[]>([]);
-  const constraintsRef = useRef<Array<{ minSize?: PanelSize; maxSize?: PanelSize }>>([]);
-  const originalUnitsRef = useRef<Array<'px' | '%' | 'auto'>>([]);
   const isDraggingRef = useRef(false);
   const isInitializedRef = useRef(false);
-  const previousPixelSizesRef = useRef<number[]>([]);
 
-  // Collapse-related refs
-  const collapsedSizeRef = useRef<Array<PanelSize | undefined>>([]);
-  const collapsedStateRef = useRef<boolean[]>([]);
-  const collapseCallbacksRef = useRef<Array<((collapsed: boolean) => void) | undefined>>([]);
+  /**
+   * Consolidated panel data structure - eliminates synchronization bugs
+   * by storing all panel-related data in a single array.
+   *
+   * Benefits:
+   * - Impossible for data to get out of sync (single source of truth)
+   * - Automatic bounds checking (array length is always consistent)
+   * - Better cache locality (related data stored together)
+   * - Easier to maintain and reason about
+   *
+   * This replaces the previous approach of having 8 separate ref arrays:
+   * - currentPixelSizesRef, dragStartPixelSizesRef, previousPixelSizesRef
+   * - constraintsRef, originalUnitsRef
+   * - collapsedSizeRef, collapsedStateRef, collapseCallbacksRef
+   */
+  interface PanelData {
+    // Size tracking
+    currentPixelSize: number;
+    dragStartPixelSize: number;
+    previousPixelSize: number;
+    originalUnit: 'px' | '%' | 'auto';
+
+    // Constraints
+    constraints: { minSize?: PanelSize; maxSize?: PanelSize };
+
+    // Collapse support
+    collapsedSize?: PanelSize;
+    collapsedState: boolean;
+    collapseCallback?: (collapsed: boolean) => void;
+  }
+
+  const panelDataRef = useRef<PanelData[]>([]);
 
   // Constraint cache for performance optimization
   const constraintCacheRef = useRef<{
@@ -113,15 +136,10 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
     const panelCount = panelChildren.length;
     if (panelCount === 0) return;
 
-    const newConstraints: Array<{ minSize?: PanelSize; maxSize?: PanelSize }> = [];
+    const newPanelData: PanelData[] = [];
     const newSizes: PanelSize[] = [];
-    const newUnits: Array<'px' | '%' | 'auto'> = [];
 
-    const newCollapsedSizes: Array<PanelSize | undefined> = [];
-    const newCollapsedStates: boolean[] = [];
-    const newCollapseCallbacks: Array<((collapsed: boolean) => void) | undefined> = [];
-
-    panelChildren.forEach(child => {
+    panelChildren.forEach((child, index) => {
       const rawProps = child.props as PanelProps;
 
       // Normalize Panel props (same normalization that Panel component does internally)
@@ -129,53 +147,60 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
       const { defaultSize, minSize, maxSize, collapsedSize, defaultCollapsed, onCollapse } =
         normalizePanelProps(rawProps);
 
-      // Store normalized constraints (convert 'auto' to undefined for optional constraints)
-      newConstraints.push({
-        minSize: minSize === 'auto' ? undefined : minSize,
-        maxSize: maxSize === 'auto' ? undefined : maxSize,
-      });
-
-      newCollapsedSizes.push(collapsedSize);
-      newCollapseCallbacks.push(onCollapse);
-
-      // Initialize collapsed state from defaultCollapsed (already normalized to boolean)
-      newCollapsedStates.push(defaultCollapsed);
+      // Determine initial size and unit
+      let initialSize: PanelSize;
+      let initialUnit: 'px' | '%' | 'auto';
 
       // If panel should start collapsed, use collapsedSize instead of defaultSize
       if (defaultCollapsed && collapsedSize) {
-        newSizes.push(collapsedSize);
-        newUnits.push(parseSize(collapsedSize).unit);
+        initialSize = collapsedSize;
+        initialUnit = parseSize(collapsedSize).unit;
       } else {
         // Use normalized defaultSize (never undefined)
-        newSizes.push(defaultSize);
-        newUnits.push(parseSize(defaultSize).unit);
+        initialSize = defaultSize;
+        initialUnit = parseSize(defaultSize).unit;
       }
+
+      newSizes.push(initialSize);
+
+      // Preserve existing pixel sizes if panel already exists at this index
+      const existingData = panelDataRef.current[index];
+      const preservePixelSizes = existingData !== undefined;
+
+      // Create consolidated panel data object
+      newPanelData.push({
+        // Size tracking - preserve existing pixel sizes if available
+        currentPixelSize: preservePixelSizes ? existingData.currentPixelSize : 0,
+        dragStartPixelSize: preservePixelSizes ? existingData.dragStartPixelSize : 0,
+        previousPixelSize: preservePixelSizes ? existingData.previousPixelSize : 0,
+        originalUnit: initialUnit,
+
+        // Constraints (convert 'auto' to undefined for optional constraints)
+        constraints: {
+          minSize: minSize === 'auto' ? undefined : minSize,
+          maxSize: maxSize === 'auto' ? undefined : maxSize,
+        },
+
+        // Collapse support
+        collapsedSize,
+        collapsedState: preservePixelSizes ? existingData.collapsedState : defaultCollapsed,
+        collapseCallback: onCollapse,
+      });
     });
 
-    // Always update constraints as they might have changed
-    constraintsRef.current = newConstraints;
+    // Always update panel data as props might have changed
+    panelDataRef.current = newPanelData;
 
-    collapsedSizeRef.current = newCollapsedSizes;
-    collapseCallbacksRef.current = newCollapseCallbacks;
-
-    // Initialize collapsed state if not yet initialized
-    if (!isInitializedRef.current || collapsedStateRef.current.length === 0) {
-      collapsedStateRef.current = newCollapsedStates;
-
-      // Fire initial collapse callbacks for panels that start collapsed
+    // Fire initial collapse callbacks for panels that start collapsed (only on first init)
+    if (!isInitializedRef.current || panelSizes.length === 0) {
       queueMicrotask(() => {
-        newCollapsedStates.forEach((collapsed, index) => {
-          if (collapsed) {
-            const callback = newCollapseCallbacks[index];
-            callback?.(true);
+        newPanelData.forEach((data) => {
+          if (data.collapsedState && data.collapseCallback) {
+            data.collapseCallback(true);
           }
         });
       });
     }
-
-    // Always update originalUnits to handle dynamically added/removed panels
-    // This ensures originalUnitsRef stays in sync with the actual panel count
-    originalUnitsRef.current = newUnits;
 
     // Initialize sizes if not yet initialized OR if state was cleared (e.g., by Strict Mode remount)
     // OR if panel count changed (panels added/removed dynamically)
@@ -203,7 +228,7 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
       // 2. Container size changes significantly (>1px)
       // 3. Constraint definitions change (detected via hash)
       // Hash only the values that matter for more efficient comparison
-      const constraintHash = constraintsRef.current.map(c => `${c.minSize}:${c.maxSize}`).join('|');
+      const constraintHash = panelDataRef.current.map(d => `${d.constraints.minSize}:${d.constraints.maxSize}`).join('|');
       const needsConstraintUpdate =
         !constraintCacheRef.current ||
         Math.abs(constraintCacheRef.current.containerSize - containerSize) > 1 ||
@@ -211,9 +236,9 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
 
       if (needsConstraintUpdate) {
         // Convert constraints to pixels once and cache them
-        const pixelConstraints = constraintsRef.current.map(c => ({
-          minPx: c.minSize ? convertToPixels(parseSize(c.minSize), containerSize) : undefined,
-          maxPx: c.maxSize ? convertToPixels(parseSize(c.maxSize), containerSize) : undefined,
+        const pixelConstraints = panelDataRef.current.map(d => ({
+          minPx: d.constraints.minSize ? convertToPixels(parseSize(d.constraints.minSize), containerSize) : undefined,
+          maxPx: d.constraints.maxSize ? convertToPixels(parseSize(d.constraints.maxSize), containerSize) : undefined,
         }));
 
         constraintCacheRef.current = {
@@ -236,8 +261,9 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
       // This prevents minSize enforcement from breaking collapsed state
       let totalAdjustment = 0;
       for (let i = 0; i < pixels.length; i++) {
-        if (collapsedStateRef.current[i] && collapsedSizeRef.current[i]) {
-          const collapsedPx = convertToPixels(parseSize(collapsedSizeRef.current[i]!), containerSize);
+        const panelData = panelDataRef.current[i];
+        if (panelData?.collapsedState && panelData.collapsedSize) {
+          const collapsedPx = convertToPixels(parseSize(panelData.collapsedSize), containerSize);
           const diff = pixels[i] - collapsedPx;
           pixels[i] = collapsedPx;
           totalAdjustment += diff;
@@ -256,7 +282,13 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
         }
       }
 
-      currentPixelSizesRef.current = pixels;
+      // Update consolidated panel data with current pixel sizes
+      for (let i = 0; i < pixels.length; i++) {
+        if (panelDataRef.current[i]) {
+          panelDataRef.current[i].currentPixelSize = pixels[i];
+        }
+      }
+
       setPixelSizes(pixels);
     };
 
@@ -278,31 +310,37 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
     const collapsePanelImpl = (panelIndex: number) => {
       if (!containerRef.current) return;
 
-      const collapsedSize = collapsedSizeRef.current[panelIndex];
-      if (!collapsedSize) {
+      const panelData = panelDataRef.current[panelIndex];
+      if (!panelData) {
+        console.warn(`Panel ${panelIndex} does not exist`);
+        return;
+      }
+
+      if (!panelData.collapsedSize) {
         console.warn(`Panel ${panelIndex} does not have a collapsedSize configured`);
         return;
       }
 
-      const wasCollapsed = collapsedStateRef.current[panelIndex];
-      if (wasCollapsed) return; // Already collapsed
+      if (panelData.collapsedState) return; // Already collapsed
 
       // Update collapsed state
-      collapsedStateRef.current[panelIndex] = true;
+      panelData.collapsedState = true;
 
       // Fire callback
       queueMicrotask(() => {
-        const callback = collapseCallbacksRef.current[panelIndex];
-        callback?.(true);
+        panelData.collapseCallback?.(true);
       });
 
       // Force size update
       const rect = containerRef.current.getBoundingClientRect();
       const containerSize = direction === 'horizontal' ? rect.width : rect.height;
-      const pixels = calculateSizes(panelSizes, containerSize, constraintsRef.current);
+
+      // Extract constraints for calculateSizes
+      const constraints = panelDataRef.current.map(d => d.constraints);
+      const pixels = calculateSizes(panelSizes, containerSize, constraints);
 
       // Apply collapsed size
-      const collapsedPx = convertToPixels(parseSize(collapsedSize), containerSize);
+      const collapsedPx = convertToPixels(parseSize(panelData.collapsedSize), containerSize);
       const diff = pixels[panelIndex] - collapsedPx;
       pixels[panelIndex] = collapsedPx;
 
@@ -315,7 +353,13 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
         });
       }
 
-      currentPixelSizesRef.current = pixels;
+      // Update consolidated data
+      for (let i = 0; i < pixels.length; i++) {
+        if (panelDataRef.current[i]) {
+          panelDataRef.current[i].currentPixelSize = pixels[i];
+        }
+      }
+
       setPixelSizes(pixels);
     };
 
@@ -323,28 +367,35 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
     const expandPanelImpl = (panelIndex: number) => {
       if (!containerRef.current) return;
 
-      const minSize = constraintsRef.current[panelIndex]?.minSize;
+      const panelData = panelDataRef.current[panelIndex];
+      if (!panelData) {
+        console.warn(`Panel ${panelIndex} does not exist`);
+        return;
+      }
+
+      const minSize = panelData.constraints.minSize;
       if (!minSize) {
         console.warn(`Panel ${panelIndex} does not have a minSize configured`);
         return;
       }
 
-      const wasCollapsed = collapsedStateRef.current[panelIndex];
-      if (!wasCollapsed) return; // Already expanded
+      if (!panelData.collapsedState) return; // Already expanded
 
       // Update collapsed state
-      collapsedStateRef.current[panelIndex] = false;
+      panelData.collapsedState = false;
 
       // Fire callback
       queueMicrotask(() => {
-        const callback = collapseCallbacksRef.current[panelIndex];
-        callback?.(false);
+        panelData.collapseCallback?.(false);
       });
 
       // Force size update
       const rect = containerRef.current.getBoundingClientRect();
       const containerSize = direction === 'horizontal' ? rect.width : rect.height;
-      const pixels = calculateSizes(panelSizes, containerSize, constraintsRef.current);
+
+      // Extract constraints for calculateSizes
+      const constraints = panelDataRef.current.map(d => d.constraints);
+      const pixels = calculateSizes(panelSizes, containerSize, constraints);
 
       // Apply minSize
       const minPx = convertToPixels(parseSize(minSize), containerSize);
@@ -360,7 +411,13 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
         });
       }
 
-      currentPixelSizesRef.current = pixels;
+      // Update consolidated data
+      for (let i = 0; i < pixels.length; i++) {
+        if (panelDataRef.current[i]) {
+          panelDataRef.current[i].currentPixelSize = pixels[i];
+        }
+      }
+
       setPixelSizes(pixels);
     };
 
@@ -383,15 +440,17 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
           const collapsedTransitions: Array<{ index: number; collapsed: boolean }> = [];
 
           sizes.forEach((size, i) => {
-            const collapsedSize = collapsedSizeRef.current[i];
-            const minSize = constraintsRef.current[i]?.minSize;
+            const panelData = panelDataRef.current[i];
+            if (!panelData) return;
+
+            const { collapsedSize, constraints, collapsedState: wasCollapsed } = panelData;
+            const minSize = constraints.minSize;
 
             // Skip if panel doesn't support collapsing
             if (!collapsedSize || !minSize) return;
 
             const sizePx = convertToPixels(parseSize(size), containerSize);
             const minPx = convertToPixels(parseSize(minSize), containerSize);
-            const wasCollapsed = collapsedStateRef.current[i];
 
             let shouldBeCollapsed = wasCollapsed;
 
@@ -409,7 +468,7 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
             }
 
             if (shouldBeCollapsed !== wasCollapsed) {
-              collapsedStateRef.current[i] = shouldBeCollapsed;
+              panelData.collapsedState = shouldBeCollapsed;
               collapsedTransitions.push({ index: i, collapsed: shouldBeCollapsed });
             }
           });
@@ -418,8 +477,8 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
           if (collapsedTransitions.length > 0) {
             queueMicrotask(() => {
               collapsedTransitions.forEach(({ index, collapsed }) => {
-                const callback = collapseCallbacksRef.current[index];
-                callback?.(collapsed);
+                const panelData = panelDataRef.current[index];
+                panelData?.collapseCallback?.(collapsed);
               });
             });
           }
@@ -428,7 +487,12 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
         setPanelSizes(sizes);
 
         // Update original units for future resize operations
-        originalUnitsRef.current = sizes.map(size => parseSize(size).unit);
+        sizes.forEach((size, i) => {
+          const panelData = panelDataRef.current[i];
+          if (panelData) {
+            panelData.originalUnit = parseSize(size).unit;
+          }
+        });
       },
       getSizes: () => panelSizes,
 
@@ -445,7 +509,7 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
       },
 
       isCollapsed: (panelIndex: number): boolean => {
-        return collapsedStateRef.current[panelIndex] ?? false;
+        return panelDataRef.current[panelIndex]?.collapsedState ?? false;
       },
     };
   }, [panelSizes, children, direction]);
@@ -453,8 +517,8 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
   // Helper to create PanelSizeInfo from pixel sizes
   const createSizeInfo = useCallback((pixelSizes: number[], containerSize: number): PanelSizeInfo[] => {
     return pixelSizes.map((pixels, i) => {
-      // Defensive check: ensure unit exists, default to 'auto' if undefined
-      const unit = originalUnitsRef.current[i] || 'auto';
+      // Get unit from consolidated panel data, with defensive fallback
+      const unit = panelDataRef.current[i]?.originalUnit || 'auto';
       const percent = (pixels / containerSize) * 100;
       const value = convertFromPixels(pixels, containerSize, unit);
       const size = formatSize(value, unit);
@@ -480,8 +544,9 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
     // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Collapse logic requires checking multiple conditions
     (proposedPixelSizes: number[], containerSize: number, leftIndex: number, rightIndex: number): number[] => {
       // Performance optimization: Early exit if neither panel has collapse support
-      const hasCollapsiblePanels =
-        collapsedSizeRef.current[leftIndex] !== undefined || collapsedSizeRef.current[rightIndex] !== undefined;
+      const leftPanel = panelDataRef.current[leftIndex];
+      const rightPanel = panelDataRef.current[rightIndex];
+      const hasCollapsiblePanels = leftPanel?.collapsedSize !== undefined || rightPanel?.collapsedSize !== undefined;
 
       if (!hasCollapsiblePanels) {
         return proposedPixelSizes; // Return original array without cloning
@@ -492,10 +557,13 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
 
       // Only check collapse for the two panels being resized
       for (const i of [leftIndex, rightIndex]) {
-        const collapsedSize = collapsedSizeRef.current[i];
+        const panelData = panelDataRef.current[i];
+        if (!panelData) continue;
+
+        const { collapsedSize, constraints, collapsedState: wasCollapsed, currentPixelSize } = panelData;
         if (!collapsedSize) continue;
 
-        const minSize = constraintsRef.current[i]?.minSize;
+        const minSize = constraints.minSize;
         if (!minSize) continue;
 
         const collapsedPx = convertToPixels(parseSize(collapsedSize), containerSize);
@@ -507,8 +575,7 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
         }
 
         const proposedPx = proposedPixelSizes[i];
-        const currentPx = currentPixelSizesRef.current[i];
-        const wasCollapsed = collapsedStateRef.current[i];
+        const currentPx = currentPixelSize;
 
         let shouldBeCollapsed = wasCollapsed;
 
@@ -544,7 +611,7 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
         }
 
         if (shouldBeCollapsed !== wasCollapsed) {
-          collapsedStateRef.current[i] = shouldBeCollapsed;
+          panelData.collapsedState = shouldBeCollapsed;
           collapsedTransitions.push({ index: i, collapsed: shouldBeCollapsed });
         }
       }
@@ -552,8 +619,8 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
       if (collapsedTransitions.length > 0) {
         queueMicrotask(() => {
           collapsedTransitions.forEach(({ index, collapsed }) => {
-            const callback = collapseCallbacksRef.current[index];
-            callback?.(collapsed);
+            const panelData = panelDataRef.current[index];
+            panelData?.collapseCallback?.(collapsed);
           });
         });
       }
@@ -576,7 +643,7 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
       const rightIndex = handleIndex + 1;
 
       // Use drag start sizes as base for proposed sizes (prevents drift)
-      const dragStartSizes = dragStartPixelSizesRef.current;
+      const dragStartSizes = panelDataRef.current.map(d => d.dragStartPixelSize);
 
       // Early exit if not properly initialized (shouldn't happen with robust handleResizeStart)
       if (!dragStartSizes || dragStartSizes.length === 0) {
@@ -588,29 +655,31 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
 
       const expectedTotal = dragStartSizes[leftIndex] + dragStartSizes[rightIndex];
 
-      // Calculate constraints in pixels
-      const leftConstraints = constraintsRef.current[leftIndex];
-      const rightConstraints = constraintsRef.current[rightIndex];
+      // Get panel data for constraints
+      const leftData = panelDataRef.current[leftIndex];
+      const rightData = panelDataRef.current[rightIndex];
+
+      if (!leftData || !rightData) {
+        console.error(`Panel data not found for indices ${leftIndex} or ${rightIndex}`);
+        return;
+      }
 
       // When collapsedSize is present, use it as the effective minimum (allow dragging to collapsed size)
-      const leftCollapsedSize = collapsedSizeRef.current[leftIndex];
-      const rightCollapsedSize = collapsedSizeRef.current[rightIndex];
-
-      const leftMinPx = leftCollapsedSize
-        ? convertToPixels(parseSize(leftCollapsedSize), containerSize)
-        : leftConstraints?.minSize
-          ? convertToPixels(parseSize(leftConstraints.minSize), containerSize)
+      const leftMinPx = leftData.collapsedSize
+        ? convertToPixels(parseSize(leftData.collapsedSize), containerSize)
+        : leftData.constraints.minSize
+          ? convertToPixels(parseSize(leftData.constraints.minSize), containerSize)
           : 0;
-      const leftMaxPx = leftConstraints?.maxSize
-        ? convertToPixels(parseSize(leftConstraints.maxSize), containerSize)
+      const leftMaxPx = leftData.constraints.maxSize
+        ? convertToPixels(parseSize(leftData.constraints.maxSize), containerSize)
         : Infinity;
-      const rightMinPx = rightCollapsedSize
-        ? convertToPixels(parseSize(rightCollapsedSize), containerSize)
-        : rightConstraints?.minSize
-          ? convertToPixels(parseSize(rightConstraints.minSize), containerSize)
+      const rightMinPx = rightData.collapsedSize
+        ? convertToPixels(parseSize(rightData.collapsedSize), containerSize)
+        : rightData.constraints.minSize
+          ? convertToPixels(parseSize(rightData.constraints.minSize), containerSize)
           : 0;
-      const rightMaxPx = rightConstraints?.maxSize
-        ? convertToPixels(parseSize(rightConstraints.maxSize), containerSize)
+      const rightMaxPx = rightData.constraints.maxSize
+        ? convertToPixels(parseSize(rightData.constraints.maxSize), containerSize)
         : Infinity;
 
       // Apply cumulative delta from drag start and constraints while maintaining total size
@@ -646,9 +715,9 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
 
       // Call onResize callback with full info
       if (onResize) {
-        const currentSizes = createSizeInfo(currentPixelSizesRef.current, containerSize);
+        const currentSizes = createSizeInfo(panelDataRef.current.map(d => d.currentPixelSize), containerSize);
         const proposedSizes = createSizeInfo(proposedPixelSizes, containerSize);
-        const previousSizes = createSizeInfo(previousPixelSizesRef.current, containerSize);
+        const previousSizes = createSizeInfo(panelDataRef.current.map(d => d.previousPixelSize), containerSize);
         const resizeInfo: ResizeInfo = {
           currentSizes,
           proposedSizes,
@@ -667,8 +736,12 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
         // If no return value, keep finalPixelSizes as proposedPixelSizes
       }
 
-      // Update ref immediately for next drag event
-      currentPixelSizesRef.current = finalPixelSizes;
+      // Update consolidated panel data with current pixel sizes
+      for (let i = 0; i < finalPixelSizes.length; i++) {
+        if (panelDataRef.current[i]) {
+          panelDataRef.current[i].currentPixelSize = finalPixelSizes[i];
+        }
+      }
 
       // During drag, only update pixel sizes (not panel sizes)
       // This prevents the useEffect from recalculating and causing jumps
@@ -682,19 +755,23 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
 
     isDraggingRef.current = true;
 
-    // Capture current sizes as "previous" for the drag operation
-    previousPixelSizesRef.current = [...currentPixelSizesRef.current];
-
-    // Capture drag start sizes for cumulative delta tracking
-    dragStartPixelSizesRef.current = [...currentPixelSizesRef.current];
+    // Capture current sizes as "previous" and "dragStart" for the drag operation
+    for (let i = 0; i < panelDataRef.current.length; i++) {
+      const data = panelDataRef.current[i];
+      data.previousPixelSize = data.currentPixelSize;
+      data.dragStartPixelSize = data.currentPixelSize;
+    }
 
     // Call onResizeStart with current state
     if (onResizeStart) {
       const rect = containerRef.current.getBoundingClientRect();
       const containerSize = direction === 'horizontal' ? rect.width : rect.height;
-      const currentSizes = createSizeInfo(currentPixelSizesRef.current, containerSize);
-      const proposedSizes = createSizeInfo(currentPixelSizesRef.current, containerSize);
-      const previousSizes = createSizeInfo(previousPixelSizesRef.current, containerSize);
+      const currentPixels = panelDataRef.current.map(d => d.currentPixelSize);
+      const previousPixels = panelDataRef.current.map(d => d.previousPixelSize);
+
+      const currentSizes = createSizeInfo(currentPixels, containerSize);
+      const proposedSizes = createSizeInfo(currentPixels, containerSize);
+      const previousSizes = createSizeInfo(previousPixels, containerSize);
 
       const resizeInfo: ResizeInfo = {
         currentSizes,
@@ -717,13 +794,13 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
     const rect = containerRef.current.getBoundingClientRect();
     const containerSize = direction === 'horizontal' ? rect.width : rect.height;
 
-    let finalPixelSizes = [...currentPixelSizesRef.current];
+    let finalPixelSizes = panelDataRef.current.map(d => d.currentPixelSize);
 
     // Call onResizeEnd with full info - it can override final sizes
     if (onResizeEnd) {
       const currentSizes = createSizeInfo(finalPixelSizes, containerSize);
       const proposedSizes = createSizeInfo(finalPixelSizes, containerSize);
-      const previousSizes = createSizeInfo(previousPixelSizesRef.current, containerSize);
+      const previousSizes = createSizeInfo(panelDataRef.current.map(d => d.previousPixelSize), containerSize);
 
       const resizeInfo: ResizeInfo = {
         currentSizes,
@@ -743,15 +820,20 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
       // If no return value, keep finalPixelSizes as is
     }
 
-    // Update refs and state with final sizes
-    currentPixelSizesRef.current = finalPixelSizes;
+    // Update consolidated panel data with final sizes
+    for (let i = 0; i < finalPixelSizes.length; i++) {
+      if (panelDataRef.current[i]) {
+        panelDataRef.current[i].currentPixelSize = finalPixelSizes[i];
+      }
+    }
+
     setPixelSizes(finalPixelSizes);
 
     // Convert final pixel sizes back to panel sizes to maintain proportions when container resizes
     // This prevents panels from reverting to original sizes in nested layouts
     const newPanelSizes = finalPixelSizes.map((pixels, i) => {
-      // Defensive fallback: use 'auto' if unit is undefined (e.g., for dynamically added panels)
-      const unit = originalUnitsRef.current[i] || 'auto';
+      // Get unit from consolidated panel data, with defensive fallback
+      const unit = panelDataRef.current[i]?.originalUnit || 'auto';
       const value = convertFromPixels(pixels, containerSize, unit);
       return formatSize(value, unit);
     });

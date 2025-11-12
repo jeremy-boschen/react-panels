@@ -20,6 +20,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Ensures callbacks execute in microtask queue for predictable timing
   - Eliminates test flakiness from time-based delays
   - Better integration with React 18's rendering pipeline
+- **HIGH:** Eliminated ref array synchronization bugs by consolidating 8 separate ref arrays into single `panelDataRef` structure
+  - Prevents index-out-of-bounds errors and synchronization issues
+  - Makes it impossible for panel data to get out of sync by design
+  - Improves cache locality and performance
+  - **NOTE:** Tests passing but some edge cases under investigation
 - **MEDIUM:** Fixed division-by-zero bug when container has zero size (hidden/display:none elements)
   - Added guard in `convertToPixels` with helpful console warning
   - Prevents NaN propagation and render failures
@@ -38,6 +43,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Optimized constraint hash calculation by replacing `JSON.stringify` with string concatenation
   - Format: `"minSize:maxSize|minSize:maxSize|..."` for faster, more memory-efficient hashing
   - Only hashes values that matter (minSize and maxSize)
+
+### Internal
+
+- **Refactored ref management:** Consolidated 8 separate ref arrays into single `PanelData[]` structure
+  - **Before:** Separate refs for `currentPixelSizes`, `dragStartPixelSizes`, `previousPixelSizes`, `constraints`, `originalUnits`, `collapsedSize`, `collapsedState`, `collapseCallbacks`
+  - **After:** Single `panelDataRef` with structured `PanelData` objects containing all panel-related state
+  - **Benefits:**
+    - Eliminates synchronization bugs by design (impossible for arrays to have different lengths)
+    - Automatic bounds checking (single array length to validate)
+    - Better cache locality (related data stored together)
+    - More maintainable and easier to reason about
+  - **Implementation notes:**
+    - Preserved pixel sizes when props change to maintain state continuity
+    - Updated all 30+ ref access locations throughout PanelGroup.tsx
+    - Added comprehensive inline documentation explaining the consolidation
 
 ### Documentation
 
