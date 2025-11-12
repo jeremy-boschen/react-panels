@@ -15,6 +15,7 @@ import { findPanelChildren, flattenPanelChildren } from './childUtils';
 import { Panel } from './Panel';
 import { normalizePanelGroupProps, normalizePanelProps } from './propNormalization';
 import { ResizeHandle, type ResizeHandleProps } from './ResizeHandle';
+import { useIsomorphicLayoutEffect } from './useIsomorphicLayoutEffect';
 import type { PanelGroupHandle, PanelGroupProps, PanelProps, PanelSize, PanelSizeInfo, ResizeInfo } from './types';
 import {
   calculateSizes,
@@ -100,6 +101,7 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
   const constraintCacheRef = useRef<{
     containerSize: number;
     constraints: Array<{ minPx?: number; maxPx?: number }>;
+    constraintHash: string;
   } | null>(null);
 
   // Initialize panel sizes and constraints
@@ -184,7 +186,9 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
   }, [children, panelSizes.length]);
 
   // Calculate pixel sizes whenever panel sizes or container changes
-  useEffect(() => {
+  // Use useIsomorphicLayoutEffect to ensure synchronous DOM measurements before paint in browser
+  // while avoiding SSR/test environment issues
+  useIsomorphicLayoutEffect(() => {
     if (!containerRef.current || panelSizes.length === 0) return;
 
     const updateSizes = () => {
@@ -194,9 +198,15 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
       const containerSize = direction === 'horizontal' ? rect.width : rect.height;
 
       // Check if we need to recalculate constraint cache
-      // Only recalculate when container size changes significantly (>1px)
+      // Recalculate when:
+      // 1. No cache exists
+      // 2. Container size changes significantly (>1px)
+      // 3. Constraint definitions change (detected via hash)
+      const constraintHash = JSON.stringify(constraintsRef.current);
       const needsConstraintUpdate =
-        !constraintCacheRef.current || Math.abs(constraintCacheRef.current.containerSize - containerSize) > 1;
+        !constraintCacheRef.current ||
+        Math.abs(constraintCacheRef.current.containerSize - containerSize) > 1 ||
+        constraintCacheRef.current.constraintHash !== constraintHash;
 
       if (needsConstraintUpdate) {
         // Convert constraints to pixels once and cache them
@@ -208,6 +218,7 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
         constraintCacheRef.current = {
           containerSize,
           constraints: pixelConstraints,
+          constraintHash,
         };
       }
 
