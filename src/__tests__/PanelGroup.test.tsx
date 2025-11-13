@@ -2970,21 +2970,29 @@ describe('PanelGroup Integration Tests', () => {
 
   describe('Branch Coverage Tests', () => {
     it('setSizes: panel stays collapsed when size is at or below minSize', async () => {
-      const groupRef = useRef<PanelGroupHandle>(null);
       const onCollapse = vi.fn();
 
-      render(
-        <div style={{ width: '1000px', height: '600px' }}>
-          <PanelGroup ref={groupRef} direction="horizontal">
-            <Panel defaultSize="400px" minSize="200px" collapsedSize="50px" defaultCollapsed onCollapse={onCollapse}>
-              <div data-testid="panel-1">Panel 1</div>
-            </Panel>
-            <Panel defaultSize="600px">
-              <div data-testid="panel-2">Panel 2</div>
-            </Panel>
-          </PanelGroup>
-        </div>
-      );
+      function TestComponent() {
+        const groupRef = useRef<PanelGroupHandle>(null);
+
+        return (
+          <div style={{ width: '1000px', height: '600px' }}>
+            <button onClick={() => groupRef.current?.setSizes(['150px', '850px'])} data-testid="set-sizes-btn">
+              Set Sizes
+            </button>
+            <PanelGroup ref={groupRef} direction="horizontal">
+              <Panel defaultSize="400px" minSize="200px" collapsedSize="50px" defaultCollapsed onCollapse={onCollapse}>
+                <div data-testid="panel-1">Panel 1</div>
+              </Panel>
+              <Panel defaultSize="600px">
+                <div data-testid="panel-2">Panel 2</div>
+              </Panel>
+            </PanelGroup>
+          </div>
+        );
+      }
+
+      render(<TestComponent />);
 
       await waitFor(() => {
         const panel1 = screen.getByTestId('panel-1').parentElement;
@@ -2993,7 +3001,8 @@ describe('PanelGroup Integration Tests', () => {
 
       // Panel starts collapsed. Call setSizes with a size <= minSize
       // This should keep it collapsed (no transition)
-      groupRef.current?.setSizes(['150px', '850px']);
+      const setSizesBtn = screen.getByTestId('set-sizes-btn');
+      fireEvent.click(setSizesBtn);
 
       await waitFor(() => {
         const panel1 = screen.getByTestId('panel-1').parentElement;
@@ -3007,21 +3016,29 @@ describe('PanelGroup Integration Tests', () => {
     });
 
     it('setSizes: panel stays expanded when size is at or above minSize', async () => {
-      const groupRef = useRef<PanelGroupHandle>(null);
       const onCollapse = vi.fn();
 
-      render(
-        <div style={{ width: '1000px', height: '600px' }}>
-          <PanelGroup ref={groupRef} direction="horizontal">
-            <Panel defaultSize="400px" minSize="200px" collapsedSize="50px" onCollapse={onCollapse}>
-              <div data-testid="panel-1">Panel 1</div>
-            </Panel>
-            <Panel defaultSize="600px">
-              <div data-testid="panel-2">Panel 2</div>
-            </Panel>
-          </PanelGroup>
-        </div>
-      );
+      function TestComponent() {
+        const groupRef = useRef<PanelGroupHandle>(null);
+
+        return (
+          <div style={{ width: '1000px', height: '600px' }}>
+            <button onClick={() => groupRef.current?.setSizes(['300px', '700px'])} data-testid="set-sizes-btn">
+              Set Sizes
+            </button>
+            <PanelGroup ref={groupRef} direction="horizontal">
+              <Panel defaultSize="400px" minSize="200px" collapsedSize="50px" onCollapse={onCollapse}>
+                <div data-testid="panel-1">Panel 1</div>
+              </Panel>
+              <Panel defaultSize="600px">
+                <div data-testid="panel-2">Panel 2</div>
+              </Panel>
+            </PanelGroup>
+          </div>
+        );
+      }
+
+      render(<TestComponent />);
 
       await waitFor(() => {
         const panel1 = screen.getByTestId('panel-1').parentElement;
@@ -3030,7 +3047,8 @@ describe('PanelGroup Integration Tests', () => {
 
       // Panel starts expanded. Call setSizes with a size >= minSize
       // This should keep it expanded (no transition)
-      groupRef.current?.setSizes(['300px', '700px']);
+      const setSizesBtn = screen.getByTestId('set-sizes-btn');
+      fireEvent.click(setSizesBtn);
 
       await waitFor(() => {
         const panel1 = screen.getByTestId('panel-1').parentElement;
@@ -3042,25 +3060,44 @@ describe('PanelGroup Integration Tests', () => {
       expect(onCollapse).not.toHaveBeenCalled();
     });
 
-    it('isCollapsed returns false for out-of-bounds index', () => {
-      const groupRef = useRef<PanelGroupHandle>(null);
+    it('isCollapsed returns false for out-of-bounds index', async () => {
+      function TestComponent() {
+        const groupRef = useRef<PanelGroupHandle>(null);
+        const [result, setResult] = useState<boolean | undefined>(undefined);
 
-      render(
-        <div style={{ width: '1000px', height: '600px' }}>
-          <PanelGroup ref={groupRef} direction="horizontal">
-            <Panel defaultSize="50%">
-              <div data-testid="panel-1">Panel 1</div>
-            </Panel>
-            <Panel defaultSize="50%">
-              <div data-testid="panel-2">Panel 2</div>
-            </Panel>
-          </PanelGroup>
-        </div>
-      );
+        return (
+          <div style={{ width: '1000px', height: '600px' }}>
+            <button onClick={() => setResult(groupRef.current?.isCollapsed(999))} data-testid="check-btn">
+              Check
+            </button>
+            <div data-testid="result">{String(result)}</div>
+            <PanelGroup ref={groupRef} direction="horizontal">
+              <Panel defaultSize="50%">
+                <div data-testid="panel-1">Panel 1</div>
+              </Panel>
+              <Panel defaultSize="50%">
+                <div data-testid="panel-2">Panel 2</div>
+              </Panel>
+            </PanelGroup>
+          </div>
+        );
+      }
+
+      render(<TestComponent />);
+
+      await waitFor(() => {
+        const panel1 = screen.getByTestId('panel-1').parentElement;
+        expect(panel1?.style.width).toBeTruthy();
+      });
 
       // Query an index that doesn't exist
-      const result = groupRef.current?.isCollapsed(999);
-      expect(result).toBe(false);
+      const checkBtn = screen.getByTestId('check-btn');
+      fireEvent.click(checkBtn);
+
+      await waitFor(() => {
+        const resultDiv = screen.getByTestId('result');
+        expect(resultDiv.textContent).toBe('false');
+      });
     });
 
     it('handles drag with right panel having collapsedSize', async () => {
