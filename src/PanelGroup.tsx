@@ -165,9 +165,11 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
 
       newSizes.push(initialSize);
 
-      // Preserve existing pixel sizes if panel already exists at this index
+      // Preserve existing pixel sizes when props change (but not on initial mount)
       const existingData = panelDataRef.current[index];
-      const preservePixelSizes = existingData !== undefined;
+      const preservePixelSizes = isInitializedRef.current &&
+                                  existingData !== undefined &&
+                                  panelDataRef.current.length === panelCount;
 
       // Create consolidated panel data object
       newPanelData.push({
@@ -210,7 +212,7 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
       setPanelSizes(newSizes);
       isInitializedRef.current = true;
     }
-  }, [children, panelSizes.length]);
+  }, [children]); // Removed panelSizes.length to prevent re-run before layout effect
 
   // Calculate pixel sizes whenever panel sizes or container changes
   // Use useIsomorphicLayoutEffect to ensure synchronous DOM measurements before paint in browser
