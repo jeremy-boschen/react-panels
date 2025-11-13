@@ -2967,4 +2967,135 @@ describe('PanelGroup Integration Tests', () => {
       expect(panel3?.style.width).toMatch(/^\d+(\.\d+)?px$/);
     });
   });
+
+  describe('Branch Coverage Tests', () => {
+    it('setSizes: panel stays collapsed when size is at or below minSize', async () => {
+      const groupRef = useRef<PanelGroupHandle>(null);
+      const onCollapse = vi.fn();
+
+      render(
+        <div style={{ width: '1000px', height: '600px' }}>
+          <PanelGroup ref={groupRef} direction="horizontal">
+            <Panel defaultSize="400px" minSize="200px" collapsedSize="50px" defaultCollapsed onCollapse={onCollapse}>
+              <div data-testid="panel-1">Panel 1</div>
+            </Panel>
+            <Panel defaultSize="600px">
+              <div data-testid="panel-2">Panel 2</div>
+            </Panel>
+          </PanelGroup>
+        </div>
+      );
+
+      await waitFor(() => {
+        const panel1 = screen.getByTestId('panel-1').parentElement;
+        expect(parseFloat(panel1?.style.width || '0')).toBeCloseTo(50, 0);
+      });
+
+      // Panel starts collapsed. Call setSizes with a size <= minSize
+      // This should keep it collapsed (no transition)
+      groupRef.current?.setSizes(['150px', '850px']);
+
+      await waitFor(() => {
+        const panel1 = screen.getByTestId('panel-1').parentElement;
+        // Should still be collapsed at collapsedSize
+        expect(parseFloat(panel1?.style.width || '0')).toBeCloseTo(50, 0);
+      });
+
+      // onCollapse should have been called once on mount, but not again (no transition)
+      expect(onCollapse).toHaveBeenCalledTimes(1);
+      expect(onCollapse).toHaveBeenCalledWith(true);
+    });
+
+    it('setSizes: panel stays expanded when size is at or above minSize', async () => {
+      const groupRef = useRef<PanelGroupHandle>(null);
+      const onCollapse = vi.fn();
+
+      render(
+        <div style={{ width: '1000px', height: '600px' }}>
+          <PanelGroup ref={groupRef} direction="horizontal">
+            <Panel defaultSize="400px" minSize="200px" collapsedSize="50px" onCollapse={onCollapse}>
+              <div data-testid="panel-1">Panel 1</div>
+            </Panel>
+            <Panel defaultSize="600px">
+              <div data-testid="panel-2">Panel 2</div>
+            </Panel>
+          </PanelGroup>
+        </div>
+      );
+
+      await waitFor(() => {
+        const panel1 = screen.getByTestId('panel-1').parentElement;
+        expect(parseFloat(panel1?.style.width || '0')).toBeCloseTo(400, 0);
+      });
+
+      // Panel starts expanded. Call setSizes with a size >= minSize
+      // This should keep it expanded (no transition)
+      groupRef.current?.setSizes(['300px', '700px']);
+
+      await waitFor(() => {
+        const panel1 = screen.getByTestId('panel-1').parentElement;
+        // Should be at the new size (still expanded)
+        expect(parseFloat(panel1?.style.width || '0')).toBeCloseTo(300, 0);
+      });
+
+      // onCollapse should never be called (no transition)
+      expect(onCollapse).not.toHaveBeenCalled();
+    });
+
+    it('isCollapsed returns false for out-of-bounds index', () => {
+      const groupRef = useRef<PanelGroupHandle>(null);
+
+      render(
+        <div style={{ width: '1000px', height: '600px' }}>
+          <PanelGroup ref={groupRef} direction="horizontal">
+            <Panel defaultSize="50%">
+              <div data-testid="panel-1">Panel 1</div>
+            </Panel>
+            <Panel defaultSize="50%">
+              <div data-testid="panel-2">Panel 2</div>
+            </Panel>
+          </PanelGroup>
+        </div>
+      );
+
+      // Query an index that doesn't exist
+      const result = groupRef.current?.isCollapsed(999);
+      expect(result).toBe(false);
+    });
+
+    it('handles drag with right panel having collapsedSize', async () => {
+      const { container } = render(
+        <div style={{ width: '1000px', height: '600px' }}>
+          <PanelGroup direction="horizontal">
+            <Panel defaultSize="400px" minSize="200px" collapsedSize="50px">
+              <div data-testid="panel-1">Panel 1</div>
+            </Panel>
+            <Panel defaultSize="600px" minSize="300px" collapsedSize="100px">
+              <div data-testid="panel-2">Panel 2</div>
+            </Panel>
+          </PanelGroup>
+        </div>
+      );
+
+      await waitFor(() => {
+        const panel1 = screen.getByTestId('panel-1').parentElement;
+        expect(panel1?.style.width).toBeTruthy();
+      });
+
+      const handle = container.querySelector('[data-resize-handle="true"]') as HTMLElement;
+      expect(handle).toBeTruthy();
+
+      // Drag right (expand left, shrink right toward its collapsedSize)
+      fireEvent.pointerDown(handle, { clientX: 400, clientY: 300 });
+      fireEvent.pointerMove(document, { clientX: 600, clientY: 300 });
+      fireEvent.pointerUp(document);
+
+      await waitFor(() => {
+        const panel1 = screen.getByTestId('panel-1').parentElement;
+        const width1 = parseFloat(panel1?.style.width || '0');
+        // Panel 1 should have expanded
+        expect(width1).toBeGreaterThan(400);
+      });
+    });
+  });
 });
