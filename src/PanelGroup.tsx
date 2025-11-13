@@ -315,10 +315,6 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
       if (!containerRef.current) return;
 
       const panelData = panelDataRef.current[panelIndex];
-      if (!panelData) {
-        console.warn(`Panel ${panelIndex} does not exist`);
-        return;
-      }
 
       if (!panelData.collapsedSize) {
         console.warn(`Panel ${panelIndex} does not have a collapsedSize configured`);
@@ -372,10 +368,6 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
       if (!containerRef.current) return;
 
       const panelData = panelDataRef.current[panelIndex];
-      if (!panelData) {
-        console.warn(`Panel ${panelIndex} does not exist`);
-        return;
-      }
 
       const minSize = panelData.constraints.minSize;
       if (!minSize) {
@@ -648,12 +640,6 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
       // Use drag start sizes as base for proposed sizes (prevents drift)
       const dragStartSizes = panelDataRef.current.map(d => d.dragStart);
 
-      // Early exit if not properly initialized (shouldn't happen with robust handleResizeStart)
-      if (!dragStartSizes || dragStartSizes.length === 0) {
-        console.error('dragStartSizes not initialized - this should not happen');
-        return;
-      }
-
       let proposedPixelSizes = [...dragStartSizes];
 
       const expectedTotal = dragStartSizes[leftIndex] + dragStartSizes[rightIndex];
@@ -661,11 +647,6 @@ export const PanelGroup = forwardRef<PanelGroupHandle, PanelGroupProps>((rawProp
       // Get panel data for constraints
       const leftData = panelDataRef.current[leftIndex];
       const rightData = panelDataRef.current[rightIndex];
-
-      if (!leftData || !rightData) {
-        console.error(`Panel data not found for indices ${leftIndex} or ${rightIndex}`);
-        return;
-      }
 
       // When collapsedSize is present, use it as the effective minimum (allow dragging to collapsed size)
       const leftMinPx = leftData.collapsedSize
